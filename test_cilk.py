@@ -14,9 +14,9 @@ failed_build_dirs = []
 for root, dirs, files in os.walk("./cilk_tests/"):
   # Don't go into .git directories
   # or the auto generated "build" dirs
+  make_huh = False
+  notest = False
   if (".git" not in root and "build" not in root and "pbbs" not in root):
-    make_huh = False
-    notest = False
     for file in files: 
       if file == "Makefile": # Have Makefile?
         make_huh = True
@@ -33,17 +33,12 @@ for root, dirs, files in os.walk("./cilk_tests/"):
       if code != 0:
         failed_builds += 1
         failed_build_dirs.append(root)
-      for exe in glob.glob("*.exe"):     # or in the current directory (we'll get rid of this eventually)
+      for exe in glob.glob("bin/*.exe"): # we either installed in bin/
         print "Running test: ", exe
         ret_code = os.system("timeout 10s " + exe)
         if ret_code != 0:
           failed += 1
-          failed_tests.append(exe)
-      #for exe in glob.glob("bin/*.exe"): # we either installed in bin/
-      #  ret_code = os.system("timeout 10s " + exe)
-      #  if ret_code != 0:
-      #    failed += 1
-      #    failed_tests.append(exe)
+          failed_tests.append(root + exe)
     finally:
       os.chdir(cwd)
 
