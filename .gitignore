@@ -11,10 +11,17 @@
 *.s
 *.cmake
 *.make
+tags
 *CmakeFiles
 libcilkrts/configure
 libcilkrts/config.status
 libcilkrts/autom4te.m4
 build
 bin
+CMakeCache.txt
+CMakeFiles/
+CMakeFiles
+Makefile
+cmake_install.cmake
+install_manifest.txt
 

@@ -213,7 +213,7 @@ static void block_zero(Block B)
 /*
  * Create new leaf nodes (BLOCK_SIZE x BLOCK_SIZE submatrices)
  */
-inline InternalNode *new_block_leaf(void)
+InternalNode *new_block_leaf(void)
 {
      LeafNode *leaf = malloc(sizeof(LeafNode));
      if (leaf == NULL) {
@@ -226,7 +226,7 @@ inline InternalNode *new_block_leaf(void)
 /*
  * Create internal node in quadtree representation
  */
-inline InternalNode *new_internal(InternalNode * a00, InternalNode * a01,
+InternalNode *new_internal(InternalNode * a00, InternalNode * a01,
           InternalNode * a10, InternalNode * a11)
 {
      InternalNode *node = malloc(sizeof(InternalNode));

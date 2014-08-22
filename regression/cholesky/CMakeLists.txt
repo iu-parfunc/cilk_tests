@@ -17,7 +17,7 @@ foreach(f ${SRC})
   string(REGEX REPLACE ".cpp$|.c$" ".exe" loc ${f})
   get_filename_component(exec ${loc} NAME)
   add_executable(${exec} ${f})
-  target_link_libraries(${exec} dl pthread cilkrts)
+  target_link_libraries(${exec} m dl pthread cilkrts)
   list(APPEND executables "build/${exec}")
 endforeach(f)
 

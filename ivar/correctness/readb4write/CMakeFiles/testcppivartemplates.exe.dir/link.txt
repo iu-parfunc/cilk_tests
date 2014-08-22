@@ -1,1 +1,0 @@
-clang++    -Wall -fcilkplus -Wno-unused-variable -Wno-unused-value -Wno-uninitialized    CMakeFiles/testcppivartemplates.exe.dir/testcppivartemplates.cpp.o  -o testcppivartemplates.exe -rdynamic -ldl -lpthread -lcilkrts 
