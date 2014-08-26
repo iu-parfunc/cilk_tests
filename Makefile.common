@@ -14,7 +14,7 @@ build: $(wildcard *.cp?{2})
 	@echo ${DIR_ROOT}
 	@echo ${DIR_BIN}
 	cp $(SCRIPT_DIR)/build_directory.sh $(DIR_ROOT)
-	./build_directory.sh
+	./build_directory.sh ${COMPILE_ARGS}
 	rm build_directory.sh
 
 clean:
@@ -23,7 +23,7 @@ clean:
 	
 run:
 	cp $(SCRIPT_DIR)/run_programs.sh $(DIR_ROOT)
-	./run_programs.sh
+	./run_programs.sh ${RUN_ARGS}
 	rm run_programs.sh
 
 distclean:
