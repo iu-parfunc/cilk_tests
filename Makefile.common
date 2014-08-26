@@ -19,7 +19,13 @@ build: $(wildcard *.cp?{2})
 
 clean:
 	rm -rf build
+	rm -rf bin
 	
+run:
+	cp $(SCRIPT_DIR)/run_programs.sh $(DIR_ROOT)
+	./run_programs.sh
+	rm run_programs.sh
+
 distclean:
 	rm -rf build
 	rm -rf bin
