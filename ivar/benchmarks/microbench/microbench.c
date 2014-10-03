@@ -27,15 +27,22 @@ void read_one(int i, __cilkrts_ivar *iv){
   //printf("read %d with value %d\n", i, val);
 }
 
+int spin = 1;
+__cilkrts_ivar proceed_to_writing;
+
 void readers(__cilkrts_ivar *array, long num_fibers) {
   int i;
   for(i = 0; i < num_fibers; i++){
     cilk_spawn read_one(i, &array[i]);
   }
+  spin = 0;
+  __cilkrts_ivar_write(&proceed_to_writing, (ivar_payload_t)1);
 }
 
 int main(int argc, char **argv){
   //printf("===== Microbench many blocking ======\n");
+
+  __cilkrts_ivar_clear(&proceed_to_writing);
 
   ticks start, end;
   my_timer_t t;
@@ -55,8 +62,10 @@ int main(int argc, char **argv){
 
   TIMER_START(t);
   start = getticks();
-  cilk_spawn writer(all_ivars, num_fibers);
   cilk_spawn readers(all_ivars, num_fibers);
+  while(spin == 1) { printf("."); }
+  // __cilkrts_ivar_read(proceed_to_writing);
+  cilk_spawn writer(all_ivars, num_fibers);
   cilk_sync;
   end = getticks();
   TIMER_STOP(t);
