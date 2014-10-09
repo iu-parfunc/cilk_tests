@@ -1,0 +1,6 @@
+Running distfib
+
+make
+
+This will build server.exe and distfib.exe.
+Run ./server.exe in a seperate command line and then ./distfib.exe <number>
