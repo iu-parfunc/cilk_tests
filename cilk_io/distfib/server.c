@@ -39,6 +39,7 @@ int main(){
   printHostName();
 
   socketID = openSocket();
+  printf(" [server] starting at port %d\n", PORT);
   bindSocket(socketID, PORT);
   listenOnSocket(socketID);
 

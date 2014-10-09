@@ -14,7 +14,7 @@
 #define NUM_SERVERS 1
 
 int sockIDs[NUM_SERVERS];
-char* nameList[NUM_SERVERS] = {"silo.soic.indiana.edu"};
+char* nameList[NUM_SERVERS] = {"tank.soic.indiana.edu"};
 
 /*
    char* nameList[NUM_SERVERS] = {"basalt.cs.indiana.edu", "breccia.cs.indiana.edu", "chert.cs.indiana.edu", //"coal.cs.indiana.edu", 
@@ -42,6 +42,7 @@ void makeConnection(int socketID, char* serverName, in_port_t port){
   serverInfo.sin_port = htons(port);
   serverInfo.sin_family = AF_INET;
 
+  printf ("[client] Trying to connect to port %d\n", port);
   if(connect(socketID, (struct sockaddr*)&serverInfo, 
         sizeof(struct sockaddr_in))<0){
     perror("connect");
@@ -95,6 +96,7 @@ int runMap(int socketID, int num){
   printf("calling %d..\n", socketID);
   TIMER_START(t);
 
+  // Cilk IO API Calls
   cilk_write(socketID, &f, sizeof(f));
 
   cilk_read(socketID, &f, sizeof(f));
@@ -120,18 +122,16 @@ long pfib(int n) {
 
 // Use IO lib here in order to make it not lose paralelism on the blocking calls over the network
 // ADD IN ON COMPUTER RUNING OF PFIB
-long distPfib(int n, int* socketID){
+long distPfib(int n, int* socketID, long *res){
   if (n < 2) return 1;
   long x, y;
 
-  __cilkrts_ivar iv;
-  __cilkrts_ivar_clear(&iv);
-
-
   x = runMap(socketID[rand() % NUM_SERVERS], n-1);
-  y = cilk_spawn distPfib(n - 2, socketID);
 
-  //cilk_sync;
+  cilk_spawn distPfib(n - 2, socketID, &y);
+
+  cilk_sync;
+  *res = x + y;
   return x + y;
 }
 
@@ -156,8 +156,9 @@ int main(int argc, char** argv){
 
   my_timer_t t;
   TIMER_START(t);
-  //j = distPfib(n, sockIDs, 0);
-  j = distPfib(n, sockIDs);
+
+  // Currently it only works if cilk_read/writes are within a cilk_spawn
+  cilk_spawn distPfib(n, sockIDs, &j);
   TIMER_STOP(t);
   printf("computed distFib of %d\treturned: %lu\ttime: %4f\n", n, j, TIMER_EVAL(t));
 
