@@ -54,13 +54,14 @@ set(BASE_C_FLAGS "-Wall -std=c99")
 set(BASE_CXX_FLAGS "-Wall")
 
 #clang needs -fcilkplus defined
-if (${CMAKE_C_COMPILER} MATCHES "clang") 
-  set(BASE_C_FLAGS "${BASE_C_FLAGS} -Wno-unused-variable -Wno-unused-value -Wno-uninitialized -fcilkplus")
+if (${CMAKE_C_COMPILER} MATCHES "clang")
+  set(BASE_C_FLAGS "${BASE_C_FLAGS} -Wno-unused-variable -Wno-unused-value -Wno-uninitialized -fcilkplus -lcurl")
   set(BASE_CXX_FLAGS "${BASE_CXX_FLAGS} -fcilkplus -Wno-unused-variable -Wno-unused-value -Wno-uninitialized")
 endIf()
 
 set(EXTRA_RELEASE_C_FLAGS "-O3")
 set(EXTRA_RELEASE_CXX_FLAGS "-O3")
+set(LIBEVENT_LIBS "$ENV{CILK_SRC}/lib/libevent.so")
 
 #C Additions
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${BASE_C_FLAGS}")
