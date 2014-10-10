@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -xe
+
 # No reason to do anything sophisticated here because if things
 # progress further we should move tests into the proper ICL test
 # suite.
