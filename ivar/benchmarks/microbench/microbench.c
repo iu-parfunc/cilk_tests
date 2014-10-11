@@ -14,7 +14,6 @@ void writer(__cilkrts_ivar *array, long num_fibers)
   int i;
   //printf("inside spawned writer... WRITING\n");
   for(i = 0; i < num_fibers; i++){
-  __cilkrts_ivar_clear(&array[i]);
   unsigned long num = 1000+i;
   __cilkrts_ivar_write(&(array[i]), (ivar_payload_t) num);
   }
