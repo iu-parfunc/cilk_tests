@@ -11,10 +11,10 @@
 #include "common.h"
 #include "../../common/timer.h"
 
-#define NUM_SERVERS 1
+#define NUM_SERVERS 2
 
 int sockIDs[NUM_SERVERS];
-char* nameList[NUM_SERVERS] = {"tank.soic.indiana.edu"};
+char* nameList[NUM_SERVERS] = {"tank.soic.indiana.edu", "silo.soic.indiana.edu"};
 
 /*
    char* nameList[NUM_SERVERS] = {"basalt.cs.indiana.edu", "breccia.cs.indiana.edu", "chert.cs.indiana.edu", //"coal.cs.indiana.edu", 

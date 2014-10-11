@@ -57,6 +57,11 @@ void pong(long id) {
 
 }
 
+/** 
+ * Usage ./pingpong_ivar.exe <num-of-fiber-pairs> <num-of-iterations>
+ *
+ * */
+
 int main(int argc, char **argv) {
 
   if (argc >= 2) num_fibers = atol(argv[1]);
