@@ -1,6 +1,7 @@
 #include <cilk/concurrent_cilk.h>
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
+#include <cilk/cilk_undocumented.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -82,7 +83,8 @@ int main(int argc, char **argv){
     return 1;
   } else {
     //printf("SUM CORRECT\n");
-    printf("%lu\t%f\t%lf\n", num_fibers, TIMER_EVAL(t), elapsed(end,start));
+    printf("%lldt%f\t%lf\n", num_fibers, TIMER_EVAL(t), elapsed(end,start));
+    __cilkrts_dump_stats();
     return 0;
   }
 }

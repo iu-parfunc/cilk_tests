@@ -4,7 +4,7 @@
 # progress further we should move tests into the proper ICL test
 # suite.
 
-# set -e 
+set -xe 
 
 FAILED=""
 NUMFAILED=0
