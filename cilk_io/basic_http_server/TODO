@@ -1,0 +1,7 @@
+FIXME:
+Sat Oct 11 01:36:54 EDT 2014
+ - We have hangs everyonce in a while in the server. We thought this might
+   possibly be due to a bug in epoll in the kernel (due to the MIO Haskell
+   paper). However, the naive servers dispell this. Need to check and see
+   whether or not this hanging is due to the script that we use to run it.
+
