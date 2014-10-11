@@ -1,6 +1,7 @@
 #include <cilk/concurrent_cilk.h>
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
+#include <cilk/cilk_undocumented.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +15,6 @@ void writer(__cilkrts_ivar *array, long num_fibers)
   int i;
   //printf("inside spawned writer... WRITING\n");
   for(i = 0; i < num_fibers; i++){
-  __cilkrts_ivar_clear(&array[i]);
   unsigned long num = 1000+i;
   __cilkrts_ivar_write(&(array[i]), (ivar_payload_t) num);
   }
@@ -83,7 +83,8 @@ int main(int argc, char **argv){
     return 1;
   } else {
     //printf("SUM CORRECT\n");
-    printf("%lu\t%f\t%lf\n", num_fibers, TIMER_EVAL(t), elapsed(end,start));
+    printf("%lldt%f\t%lf\n", num_fibers, TIMER_EVAL(t), elapsed(end,start));
+    __cilkrts_dump_stats();
     return 0;
   }
 }

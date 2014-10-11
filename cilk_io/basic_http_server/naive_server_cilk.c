@@ -49,10 +49,6 @@ char RESPONSE[] =
 "<body bgcolor=\"white\" text=\"black\">\n"
 "<center><h1>Welcome to nginx!</h1></center>\n</body>\n</html>\n";
 
-#if !(defined SHOW_PEAK_PERFORMANCE)
-int evfd = -1;
-#endif
-
 int main(int argc, char *argv[]) {
   if (argc != 3) {
     printf( "usage: %s #workers <port number>\n", argv[0] );
