@@ -45,7 +45,7 @@ void readers(vector< ivar<int> > & iv)
         // This would normally be a cilk_for in practice, but that wouldn't create behavior as perverse.
         cilk_spawn read_one( i, &iv[i] ); // [anon spawn would be nice here...]
     }
-    __cilkrts_dump_stats(); 
+    // __cilkrts_dump_stats(); 
     printf("====     Done spawning readers.\n");
     flag = 1;
 }
