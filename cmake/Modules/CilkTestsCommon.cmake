@@ -61,7 +61,7 @@ endIf()
 
 set(EXTRA_RELEASE_C_FLAGS "-O3")
 set(EXTRA_RELEASE_CXX_FLAGS "-O3")
-set(LIBEVENT_LIBS "$ENV{CILK_SRC}/lib/libevent.so")
+set(LIBEVENT_LIBS "$ENV{CILK_SRC}/deps/build/lib/libevent.so")
 
 #C Additions
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${BASE_C_FLAGS}")
