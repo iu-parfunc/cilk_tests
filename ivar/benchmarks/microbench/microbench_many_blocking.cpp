@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <cilk/concurrent_cilk.h>
 #include <cilk/cilk.h>
+#include <cilk/cilk_undocumented.h>
 #include <cilk/ivar.h>
 
 #include <vector>
@@ -19,11 +20,13 @@ using namespace std;
 int num_fibers = 100; // Default
 // int num_fibers = 5;
 
+volatile int flag = 0;
 
 void writer(vector< ivar<int> > & iv) {
     printf("====     Inside spawned writer... sleeping for a bit\n");
-//    usleep(1000 * 1000); // microseconds
-
+    // usleep(1000 * 1000); // microseconds
+    while(!flag) { }
+    printf("====     Now actually writing...\n");
     for(int i=0; i<num_fibers; i++)
        iv[i].put(1000 + i);
 
@@ -39,9 +42,13 @@ void readers(vector< ivar<int> > & iv)
 {
     for(int i=0; i<num_fibers; i++) 
     {
+        // printf("====     Trying reader %d\n", i);
         // This would normally be a cilk_for in practice, but that wouldn't create behavior as perverse.
         cilk_spawn read_one( i, &iv[i] ); // [anon spawn would be nice here...]
     }
+    __cilkrts_dump_stats(); 
+    printf("====     Done spawning readers.\n");
+    flag = 1;
 }
 
 int main(int argc, char **argv) 
@@ -79,6 +86,7 @@ int main(int argc, char **argv)
         return 1;
     }
     else printf(" (Sum correct.)\n");
- 
+
+    __cilkrts_dump_stats(); 
     return 0;
 }
