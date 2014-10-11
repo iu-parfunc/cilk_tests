@@ -20,7 +20,7 @@ build: $(wildcard *.cp?{2})
 clean:
 	rm -rf build
 	rm -rf bin
-	
+
 run:
 	cp $(SCRIPT_DIR)/run_programs.sh $(DIR_ROOT)
 	./run_programs.sh ${RUN_ARGS}

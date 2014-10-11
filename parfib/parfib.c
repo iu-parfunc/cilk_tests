@@ -55,6 +55,7 @@ int main(int argc, char** argv) {
   printf("PARFIB_INPUT: %d\n", n);
   printf("CPUTIME: %lf\n", ((double)c_elapsed)/CLOCKS_PER_SEC);
   printf("SELFTIMED: %lf\n", real);
+  printf("TOTAL_WORKERS: %d\n", __cilkrts_get_total_workers());
 
   // TIMER_EVAL(t), elapsed(t2,t1), __cilkrts_get_total_workers());
 
