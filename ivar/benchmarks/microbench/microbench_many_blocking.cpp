@@ -16,9 +16,8 @@
 
 using namespace std;
 
-// int num_fibers = 1000;
 int num_fibers = 100; // Default
-// int num_fibers = 5;
+int num_iters  = 1; // Default
 
 volatile int flag = 0;
 
@@ -55,24 +54,27 @@ int main(int argc, char **argv)
 {
     printf("==== microbench_many_blocking test program...\n");
 
-    if (argc == 2) {
-       num_fibers = atoi(argv[1]);
+    if (argc >= 2) num_fibers = atoi(argv[1]);
+    if (argc >= 3) num_iters  = atoi(argv[2]);
+
+    long long sum;
+    for (int i=0; i<num_iters; i++) {
+      printf("==== [iter %d] Creating %d blocked fibers.\n", i, num_fibers);
+      vector< ivar<int> > all_ivars( num_fibers );
+      printf("==== Created array of ivars.\n");
+      cilk_spawn writer(all_ivars);
+      cilk_spawn readers(all_ivars);
+      cilk_sync;
+      printf("====   All ivars read successfully.\n");
+
+      if (i == num_iters - 1) {
+	sum = 0;
+	for(int i=0; i<num_fibers; i++)
+	  sum +=  all_ivars[i].get();
+
+	printf("====   Sum of all values: %ld\n", sum);
+      }
     }
-    printf("==== Creating %d blocked fibers.\n", num_fibers);
-    vector< ivar<int> > all_ivars( num_fibers );
-    printf("==== Created array of ivars.\n");
-
-    cilk_spawn writer(all_ivars);
-    cilk_spawn readers(all_ivars);
-    cilk_sync;
-
-    printf("====   All ivars read successfully.\n");
-
-    long long sum = 0;
-    for(int i=0; i<num_fibers; i++)
-      sum +=  all_ivars[i].get();
-
-    printf("====   Sum of all values: %ld\n", sum);
 
 
     // sum $ map (+1000) [0.. 10000-1] == 59995000
