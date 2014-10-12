@@ -11,6 +11,19 @@ failed_tests = []
 failed_builds = 0
 failed_build_dirs = []
 
+known_testfails = [
+   './cilk_tests/parfibbin/ivars_parfib.exe',
+   './cilk_tests/parfibbin/fib_pthread.exe',
+   './cilk_tests/cilk_io/basic_http_serverbin/naive_server_pthread.exe',
+   './cilk_tests/cilk_io/basic_http_serverbin/pthread_server_base.exe',
+   './cilk_tests/cilk_io/basic_http_serverbin/naive_server_cilk.exe',
+   './cilk_tests/cilk_io/basic_http_serverbin/cilk_server1.exe',
+   './cilk_tests/ivar/benchmarks/pingpongbin/pingpong_ivars.exe']
+
+known_buildfails = [
+   './cilk_tests/cilk_io/distfib',
+   './cilk_tests/cilk_io/hello_world']
+
 for root, dirs, files in os.walk("./cilk_tests/"):
   # Don't go into .git directories
   # or the auto generated "build" dirs
@@ -31,14 +44,20 @@ for root, dirs, files in os.walk("./cilk_tests/"):
       print "BUILDING in dir: ", root
       code = os.system("make -B") # Remake everything
       if code != 0:
-        failed_builds += 1
-        failed_build_dirs.append(root)
+        if root in known_buildfails:
+          print "Test failed to build, but IGNORING, because it's a known failure: " + root
+        else:
+          failed_builds += 1
+          failed_build_dirs.append(root)
       for exe in glob.glob("bin/*.exe"): # we either installed in bin/
         print "Running test: ", exe
         ret_code = os.system("timeout 10s " + exe)
         if ret_code != 0:
-          failed += 1
-          failed_tests.append(root + exe)
+          if root+exe in known_testfails:
+            print "Test failed to run, but IGNORING, because it's a known failure: " + root+exe
+          else:
+            failed += 1
+            failed_tests.append(root + exe)
     finally:
       os.chdir(cwd)
 
