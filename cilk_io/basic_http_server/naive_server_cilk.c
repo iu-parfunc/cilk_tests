@@ -18,7 +18,6 @@
 void acceptLoop();
 void *workerLoop(void *);
 void receiveLoop(int, char []);
-void setNonBlocking(int);
 
 // constants
 #define MAX_NUM_WORKERS 120
@@ -55,7 +54,8 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  asprintf(&EXPECTED_HTTP_REQUEST, "GET / HTTP/1.1\r\nHost: 129.79.247.33:%d\r\nUser-Agent: weighttp/0.3\r\nConnection: keep-alive\r\n\r\n", atoi(argv[2]));
+  /*asprintf(&EXPECTED_HTTP_REQUEST, "GET / HTTP/1.1\r\nHost: 129.79.247.33:%d\r\nUser-Agent: weighttp/0.3\r\nConnection: keep-alive\r\n\r\n", atoi(argv[2]));*/
+  asprintf(&EXPECTED_HTTP_REQUEST, "GET / HTTP/1.1\r\nHost: 127.0.0.1:%d\r\nUser-Agent: weighttp/0.3\r\nConnection: keep-alive\r\n\r\n", atoi(argv[2]));
   PORT_NUM=atoi(argv[2]);
 
   EXPECTED_RECV_LEN = strlen(EXPECTED_HTTP_REQUEST);
@@ -97,7 +97,7 @@ void receiveLoop(int sock, char recvbuf[]) {
       if (remaining == 0) {
         remaining = EXPECTED_RECV_LEN;
         numSent = send(sock, RESPONSE, RESPONSE_LEN, 0);
-        /*printf("%s\n", RESPONSE);*/
+        /*printf(".");*/
         if (numSent == -1) {
           perror("send failed");
           exit(-1);
@@ -106,14 +106,6 @@ void receiveLoop(int sock, char recvbuf[]) {
           perror("partial send");
           exit(-1);
         }
-      }
-    }
-    if (m==-1) {
-      if (errno==EAGAIN) {
-        continue;
-      } else {
-        perror("recv");
-        exit(-1);
       }
     }
   }
@@ -154,20 +146,6 @@ void acceptLoop()
       printf("Error %d doing accept", errno);
       exit(-1);
     }
-    setNonBlocking(sock_tmp);
     cilk_spawn workerLoop((void*)(unsigned long)sock_tmp);
   }
-}
-
-void setNonBlocking(int fd) {
-  int flags;
-  if (-1 == (flags = fcntl(fd, F_GETFL, 0))) {
-    perror("Getting NONBLOCKING failed.\n");
-    exit(-1);
-  }
-  if ( fcntl(fd, F_SETFL, flags | O_NONBLOCK ) < 0 ) {
-    perror("Setting NONBLOCKING failed.\n");
-    exit(-1);
-  }
-  return;
 }

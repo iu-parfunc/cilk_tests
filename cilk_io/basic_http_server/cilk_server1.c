@@ -57,7 +57,7 @@ void *socketCheck(void *);
 // Fill this in with the http request that your
 // weighttp client sends to the server. This is the
 // request that I get.
-char* EXPECTED_HTTP_REQUEST; 
+char* EXPECTED_HTTP_REQUEST;
 int EXPECTED_RECV_LEN;
 int PORT_NUM;
 

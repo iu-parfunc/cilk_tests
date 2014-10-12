@@ -59,7 +59,7 @@ void *socketCheck(void *);
 // Fill this in with the http request that your
 // weighttp client sends to the server. This is the
 // request that I get.
-char* EXPECTED_HTTP_REQUEST; 
+char* EXPECTED_HTTP_REQUEST;
 int EXPECTED_RECV_LEN;
 int PORT_NUM;
 
@@ -90,7 +90,8 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  asprintf(&EXPECTED_HTTP_REQUEST, "GET / HTTP/1.1\r\nHost: 129.79.247.33:%d\r\nUser-Agent: weighttp/0.3\r\nConnection: keep-alive\r\n\r\n", atoi(argv[2]));
+  /*asprintf(&EXPECTED_HTTP_REQUEST, "GET / HTTP/1.1\r\nHost: 129.79.247.33:%d\r\nUser-Agent: weighttp/0.3\r\nConnection: keep-alive\r\n\r\n", atoi(argv[2]));*/
+  asprintf(&EXPECTED_HTTP_REQUEST, "GET / HTTP/1.1\r\nHost: 127.0.0.1:%d\r\nUser-Agent: weighttp/0.3\r\nConnection: keep-alive\r\n\r\n", atoi(argv[2]));
   PORT_NUM=atoi(argv[2]);
 
   EXPECTED_RECV_LEN = strlen(EXPECTED_HTTP_REQUEST);
