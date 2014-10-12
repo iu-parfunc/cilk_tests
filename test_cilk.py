@@ -24,6 +24,8 @@ known_buildfails = [
    './cilk_tests/cilk_io/distfib',
    './cilk_tests/cilk_io/hello_world']
 
+ignored_fails = []
+  
 for root, dirs, files in os.walk("./cilk_tests/"):
   # Don't go into .git directories
   # or the auto generated "build" dirs
@@ -46,6 +48,7 @@ for root, dirs, files in os.walk("./cilk_tests/"):
       if code != 0:
         if root in known_buildfails:
           print "Test failed to build, but IGNORING, because it's a known failure: " + root
+          ignored_fails.append(root)
         else:
           failed_builds += 1
           failed_build_dirs.append(root)
@@ -55,6 +58,7 @@ for root, dirs, files in os.walk("./cilk_tests/"):
         if ret_code != 0:
           if root+exe in known_testfails:
             print "Test failed to run, but IGNORING, because it's a known failure: " + root+exe
+            ignored_fails.append(root)
           else:
             failed += 1
             failed_tests.append(root + exe)
@@ -62,11 +66,15 @@ for root, dirs, files in os.walk("./cilk_tests/"):
       os.chdir(cwd)
 
 print "================== Tests Finished ========================"
-print "Number of failed tests  : ", failed
+print "Number of unexpected failed tests  : ", failed
 print "Tests that failed       : ", failed_tests
-print "Number of failed builds : ", failed_builds
+print "Number of unexpected failed builds : ", failed_builds
 print "Builds that failed      : ", failed_build_dirs
 print "=========================================================="
+
+if len(ignored_fails) > 0:
+  print "WARNING: IGNORED known failures: "
+  print ignored_fails
 
 # For now, don't report failed tests, but instead report failed builds
 if failed_builds != 0:
