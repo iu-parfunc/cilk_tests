@@ -1,7 +1,9 @@
 
+# This is a minimal example of how to build a client app that uses the
+# Cilk IO lib.
 
 # Dynamic:
-LIBPATHS= -L$(CILK_SRC)/build/ -L$(CILK_SRC)/lib/
+LIBPATHS= -L$(CILK_SRC)/build/ -L$(CILK_SRC)/deps/build/lib/
 LIBS= -levent -lcilkrts
 
 # Simple example
