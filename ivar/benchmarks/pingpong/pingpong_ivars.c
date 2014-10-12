@@ -25,12 +25,15 @@ void ping(long id) {
     // printf(" [ping] r_ivar[%ld] address : %p\n", id, &r_ivars[id]);
 
     // printf(" [ping] writing to ivar %p\n", &w_ivars[id]);
+
+
     __cilkrts_ivar_write(&w_ivars[id], 1);
 
     __cilkrts_ivar_read(&r_ivars[id]);
     __cilkrts_ivar_clear(&r_ivars[id]);
 
-    if (++progress[id] >= iterations) {
+    __sync_fetch_and_add(&progress[id], 1);
+    if (progress[id] >= iterations) {
       __cilkrts_ivar_write(&w_ivars[id], 1); // Unblocks the consumer so it can finish
       return;
     }
@@ -44,6 +47,8 @@ void pong(long id) {
     __cilkrts_ivar_read(&w_ivars[id]);
     __cilkrts_ivar_clear(&w_ivars[id]);
 
+    // __sync_synchronize();
+    
     // printf(" [pong] writing to ivar %p\n", &r_ivars[id]);
     __cilkrts_ivar_write(&r_ivars[id], 1);
 
@@ -95,6 +100,8 @@ int main(int argc, char **argv) {
   int i;
   for (i = 0; i < num_fibers; i++) {
     progress[i] = 0;
+    // printf(" [pingpong] w_ivars[%d] address : %p\n", i, &w_ivars[i]); 
+    // printf(" [pingpong] r_ivars[%d] address : %p\n", i, &r_ivars[i]); 
     __cilkrts_ivar_clear(&w_ivars[i]);
     __cilkrts_ivar_clear(&r_ivars[i]);
   }
