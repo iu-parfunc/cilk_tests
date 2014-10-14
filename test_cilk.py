@@ -5,6 +5,8 @@ import os
 import glob
 import sys
 
+passed = 0
+
 failed = 0
 failed_tests = []
 
@@ -12,13 +14,14 @@ failed_builds = 0
 failed_build_dirs = []
 
 known_testfails = [
-   './cilk_tests/parfibbin/ivars_parfib.exe',
-   './cilk_tests/parfibbin/fib_pthread.exe',
-   './cilk_tests/cilk_io/basic_http_serverbin/naive_server_pthread.exe',
-   './cilk_tests/cilk_io/basic_http_serverbin/pthread_server_base.exe',
-   './cilk_tests/cilk_io/basic_http_serverbin/naive_server_cilk.exe',
-   './cilk_tests/cilk_io/basic_http_serverbin/cilk_server1.exe',
-   './cilk_tests/ivar/benchmarks/pingpongbin/pingpong_ivars.exe']
+   './cilk_tests/parfib/bin/ivars_parfib.exe',
+   './cilk_tests/parfib/bin/fib_pthread.exe',
+   './cilk_tests/ivar/benchmarks/microbench/bin/microbench_many_blocking.exe',
+   './cilk_tests/cilk_io/basic_http_server/bin/naive_server_pthread.exe',
+   './cilk_tests/cilk_io/basic_http_server/bin/pthread_server_base.exe',
+   './cilk_tests/cilk_io/basic_http_server/bin/naive_server_cilk.exe',
+   './cilk_tests/cilk_io/basic_http_server/bin/cilk_server1.exe',
+   './cilk_tests/ivar/benchmarks/pingpong/bin/pingpong_ivars.exe']
 
 known_buildfails = [
    './cilk_tests/cilk_io/distfib',
@@ -53,10 +56,12 @@ for root, dirs, files in os.walk("./cilk_tests/"):
         else:
           failed_builds += 1
           failed_build_dirs.append(root)
-      for exe in glob.glob("bin/*.exe"): # we either installed in bin/
+      for exe in glob.glob("/bin/*.exe"): # we either installed in bin/
         print "Running test: ", exe
         ret_code = os.system("timeout 10s " + exe)
-        if ret_code != 0:
+        if ret_code == 0:
+          passed += 1
+        else:
           if root+exe in known_testfails:
             print "Test failed to run, but IGNORING, because it's a known failure: " + root+exe
             ignored_fails.append(root)
@@ -67,6 +72,7 @@ for root, dirs, files in os.walk("./cilk_tests/"):
       os.chdir(cwd)
 
 print "================== Tests Finished ========================"
+print "Tests passed : ", passed
 print "Number of unexpected failed tests  : ", failed
 print "Tests that failed       : ", failed_tests
 print "Number of unexpected failed builds : ", failed_builds
@@ -77,7 +83,12 @@ if len(ignored_fails) > 0:
   print "WARNING: IGNORED known failures: "
   print ignored_fails
 
-# For now, don't report failed tests, but instead report failed builds
-if failed_builds != 0:
-  sys.exit(1)
-
+if failed_builds > 0:
+    sys.exit(1)
+  
+if failed > 0:
+  if os.getenv("CONCURRENTCILK_CC","icc"):
+    print "WARNING: not failing tests because we EXPECT icc to fail for now."
+    sys.exit(0)
+  else:
+    sys.exit(1)
