@@ -12,6 +12,8 @@ cmake \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DCMAKE_INSTALL_PREFIX=$DIR_BIN ..;
 
+echo "CMake complete, exit code was $?"
+
 make && make install
 
 cd ..
