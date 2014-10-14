@@ -55,7 +55,7 @@ set(BASE_CXX_FLAGS "-Wall")
 
 #clang needs -fcilkplus defined
 if (${CMAKE_C_COMPILER} MATCHES "clang")
-  set(BASE_C_FLAGS "${BASE_C_FLAGS} -Wno-unused-variable -Wno-unused-value -Wno-uninitialized -fcilkplus -lcurl")
+  set(BASE_C_FLAGS "${BASE_C_FLAGS} -Wno-unused-variable -Wno-unused-value -Wno-uninitialized -fcilkplus ")
   set(BASE_CXX_FLAGS "${BASE_CXX_FLAGS} -fcilkplus -Wno-unused-variable -Wno-unused-value -Wno-uninitialized")
 endIf()
 
