@@ -7,6 +7,8 @@ mkdir build
 cd build 
 DIR_BIN=.
 
+echo "Where is cmake?  Here: "`which -a cmake`
+
 cmake \
   -DCONCURRENT_CILK=ON \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
