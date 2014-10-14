@@ -12,13 +12,14 @@ failed_builds = 0
 failed_build_dirs = []
 
 known_testfails = [
-   './cilk_tests/parfibbin/ivars_parfib.exe',
-   './cilk_tests/parfibbin/fib_pthread.exe',
-   './cilk_tests/cilk_io/basic_http_serverbin/naive_server_pthread.exe',
-   './cilk_tests/cilk_io/basic_http_serverbin/pthread_server_base.exe',
-   './cilk_tests/cilk_io/basic_http_serverbin/naive_server_cilk.exe',
-   './cilk_tests/cilk_io/basic_http_serverbin/cilk_server1.exe',
-   './cilk_tests/ivar/benchmarks/pingpongbin/pingpong_ivars.exe']
+   './cilk_tests/parfib/bin/ivars_parfib.exe',
+   './cilk_tests/parfib/bin/fib_pthread.exe',
+   './cilk_tests/ivar/benchmarks/microbench/bin/microbench_many_blocking.exe',
+   './cilk_tests/cilk_io/basic_http_server/bin/naive_server_pthread.exe',
+   './cilk_tests/cilk_io/basic_http_server/bin/pthread_server_base.exe',
+   './cilk_tests/cilk_io/basic_http_server/bin/naive_server_cilk.exe',
+   './cilk_tests/cilk_io/basic_http_server/bin/cilk_server1.exe',
+   './cilk_tests/ivar/benchmarks/pingpong/bin/pingpong_ivars.exe']
 
 known_buildfails = [
    './cilk_tests/cilk_io/distfib',
@@ -53,7 +54,7 @@ for root, dirs, files in os.walk("./cilk_tests/"):
         else:
           failed_builds += 1
           failed_build_dirs.append(root)
-      for exe in glob.glob("bin/*.exe"): # we either installed in bin/
+      for exe in glob.glob("/bin/*.exe"): # we either installed in bin/
         print "Running test: ", exe
         ret_code = os.system("timeout 10s " + exe)
         if ret_code != 0:
