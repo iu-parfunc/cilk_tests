@@ -1,9 +1,21 @@
 #! /usr/bin/env python 
 
-# This script is run from CILK_ROOT
+# This script is run from CILK_SRC
 import os
 import glob
 import sys
+from subprocess import Popen, PIPE
+
+class colors:
+  SUCCESS = '\033[92m'
+  FAIL = '\033[91m'
+  ENDC = '\033[0m'
+
+def printcolor(stdout, stderr):
+  print "---------------------------------------------"
+  print colors.FAIL,"STDERR output: ",err,colors.ENDC
+  print "STDOUT output: "
+  print "---------------------------------------------"
 
 passed = 0
 
@@ -29,6 +41,9 @@ known_buildfails = [
    './cilk_tests/cilk_io/echoserver' ]
 
 ignored_fails = []
+
+cwd = os.getcwd()
+os.chdir(os.environ['CILK_SRC'])
   
 for root, dirs, files in os.walk("./cilk_tests/"):
   # Don't go into .git directories
@@ -48,26 +63,33 @@ for root, dirs, files in os.walk("./cilk_tests/"):
     try:
       os.chdir(root)
       print "BUILDING in dir: ", root
-      code = os.system("make -B") # Remake everything
-      if code != 0:
+      proc = Popen("make -B", stderr=PIPE, stdout=PIPE, shell=True)
+      out,err = proc.communicate()
+      if proc.returncode != 0:
         if root in known_buildfails:
           print "Test failed to build, but IGNORING, because it's a known failure: " + root
           ignored_fails.append(root)
+          printcolor(out,err)
         else:
           failed_builds += 1
           failed_build_dirs.append(root)
+          printcolor(out,err)
       for exe in glob.glob("/bin/*.exe"): # we either installed in bin/
         print "Running test: ", exe
         ret_code = os.system("timeout 10s " + exe)
-        if ret_code == 0:
+        proc = Popen("make -B", stderr=PIPE, stdout=PIPE, shell=True)
+        out,err = proc.communicate()
+        if proc.returncode == 0:
           passed += 1
         else:
           if root+exe in known_testfails:
             print "Test failed to run, but IGNORING, because it's a known failure: " + root+exe
             ignored_fails.append(root)
+            printcolor(out,err)
           else:
             failed += 1
             failed_tests.append(root + exe)
+            printcolor(out,err)
     finally:
       os.chdir(cwd)
 
@@ -92,3 +114,5 @@ if failed > 0:
     sys.exit(0)
   else:
     sys.exit(1)
+
+
