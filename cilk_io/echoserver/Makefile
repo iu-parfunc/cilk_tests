@@ -3,13 +3,15 @@
 # Cilk IO lib.
 
 # Dynamic:
+CC = $(CONCURRENTCILK_CC)
+CFLAGS = -fcilkplus
 LIBPATHS= -L$(CILK_SRC)/build/ -L$(CILK_SRC)/deps/build/lib/
-LIBS= -levent -lcilkrts
+LIBS= -levent -lcilkrts -lpthread -ldl
 
 # Simple example
 # echoserver.exe: echoserver.c
 all:
-	icc -I$(CILK_SRC)/include/ $(LIBPATHS) $(LIBS) echoserver.c -o echoserver.exe
+	$(CC) $(CFLAGS) -I$(CILK_SRC)/include/ $(LIBPATHS) $(LIBS) echoserver.c -o echoserver.exe
 
 
 run:

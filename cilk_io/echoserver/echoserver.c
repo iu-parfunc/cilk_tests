@@ -1,5 +1,6 @@
 
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <assert.h>
 #include <fcntl.h>
@@ -14,19 +15,19 @@
 
 #include <cilk/cilk.h>
 #include <cilk/concurrent_cilk.h>
-#include <event2/event.h>
 
 #define SERVER_PORT 5555
 
-#define BUF_MAX 1024
+#define BUF_MAX 256
 
 
 void do_echo(int fd) {
   char recvbuf[BUF_MAX];
-  int len = 0;
-  while (len >= 0) {
-    len = cilk_read(fd, recvbuf, BUF_MAX);
-    cilk_write(fd, recvbuf, len);
+  int rlen = 0;
+  int wlen = 0;
+  while (rlen >= 0 && wlen >= 0) {
+    rlen = cilk_read(fd, recvbuf, BUF_MAX);
+    wlen = cilk_write(fd, recvbuf, rlen);
   }
 }
 
