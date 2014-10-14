@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 
 # The requirements for a program are the following
 # it must (ONLY) be the number it is run on, followed by a tab and then the time it took to run

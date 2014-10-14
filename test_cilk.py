@@ -22,7 +22,8 @@ known_testfails = [
 
 known_buildfails = [
    './cilk_tests/cilk_io/distfib',
-   './cilk_tests/cilk_io/hello_world']
+   './cilk_tests/cilk_io/hello_world',
+   './cilk_tests/cilk_io/echoserver' ]
 
 ignored_fails = []
   

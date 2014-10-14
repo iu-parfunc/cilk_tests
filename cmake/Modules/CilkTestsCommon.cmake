@@ -11,8 +11,11 @@ cmake_minimum_required(VERSION 2.8.8)
 # -----------------------------------------
 
 # Set clang/clang++ as the compiler
-set(CMAKE_C_COMPILER "clang")
-set(CMAKE_CXX_COMPILER "clang++")
+set(CMAKE_C_COMPILER "$ENV{CONCURRENTCILK_CC}")
+set(CMAKE_CXX_COMPILER "$ENV{CONCURRENTCILK_CXX}")
+
+#set(CMAKE_C_COMPILER "clang")
+#set(CMAKE_CXX_COMPILER "clang++")
 
 # Set gcc as the compiler
 #set(CMAKE_C_COMPILER "gcc")
