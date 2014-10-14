@@ -5,6 +5,8 @@ import os
 import glob
 import sys
 
+passed = 0
+
 failed = 0
 failed_tests = []
 
@@ -57,7 +59,9 @@ for root, dirs, files in os.walk("./cilk_tests/"):
       for exe in glob.glob("/bin/*.exe"): # we either installed in bin/
         print "Running test: ", exe
         ret_code = os.system("timeout 10s " + exe)
-        if ret_code != 0:
+        if ret_code == 0:
+          passed += 1
+        else:
           if root+exe in known_testfails:
             print "Test failed to run, but IGNORING, because it's a known failure: " + root+exe
             ignored_fails.append(root)
@@ -68,6 +72,7 @@ for root, dirs, files in os.walk("./cilk_tests/"):
       os.chdir(cwd)
 
 print "================== Tests Finished ========================"
+print "Tests passed : ", passed
 print "Number of unexpected failed tests  : ", failed
 print "Tests that failed       : ", failed_tests
 print "Number of unexpected failed builds : ", failed_builds
