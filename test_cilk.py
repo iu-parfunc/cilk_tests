@@ -77,7 +77,5 @@ if len(ignored_fails) > 0:
   print "WARNING: IGNORED known failures: "
   print ignored_fails
 
-# For now, don't report failed tests, but instead report failed builds
-if failed_builds != 0:
+if failed_builds != 0 or failed != 0:
   sys.exit(1)
-
