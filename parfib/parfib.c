@@ -36,6 +36,7 @@ int main(int argc, char** argv) {
   //long ret;
   //ret = pfib(n);
 
+  TIMER_RESET(t);
   TIMER_START(t);
   //  clock_t c1 = clock();
   struct timeval r0,r1;

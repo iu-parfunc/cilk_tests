@@ -21,10 +21,10 @@ void ping(long id) {
 
   while (1) {
 
-    // printf(" [ping] w_ivar[%ld] address : %p\n", id, &w_ivars[id]);
-    // printf(" [ping] r_ivar[%ld] address : %p\n", id, &r_ivars[id]);
+    // // printf(" [ping] w_ivar[%ld] address : %p\n", id, &w_ivars[id]);
+    // // printf(" [ping] r_ivar[%ld] address : %p\n", id, &r_ivars[id]);
 
-    printf(" [ping] writing to ivar %p\n", &w_ivars[id]);
+    // printf(" [ping] writing to ivar %p\n", &w_ivars[id]);
 
     __cilkrts_ivar_write(&w_ivars[id], 1);
 
@@ -48,8 +48,8 @@ void pong(long id) {
 
     // __sync_synchronize();
     
-    // printf(" [pong] writing to ivar %p\n", &r_ivars[id]);
-    printf(" [pong] progress[%ld] : %ld\n", id, progress[id]);
+    // // printf(" [pong] writing to ivar %p\n", &r_ivars[id]);
+    // printf(" [pong] progress[%ld] : %ld\n", id, progress[id]);
     __cilkrts_ivar_write(&r_ivars[id], 1);
 
 
@@ -108,6 +108,7 @@ int main(int argc, char **argv) {
   printf(" [pingpong] w_ivars[%d] address : %p\n", 0, &w_ivars[0]); 
   printf(" [pingpong] r_ivars[%d] address : %p\n", 0, &r_ivars[0]); 
 
+  TIMER_RESET(t);
   TIMER_START(t);
 
   for (i = 0; i < num_fibers; i++) {
@@ -123,7 +124,7 @@ int main(int argc, char **argv) {
 
   TIMER_STOP(t);
 
-  printf(" [pingpong] time taken %f\n", TIMER_EVAL(t));
+  printf("SELFTIMED: %f\n", TIMER_EVAL(t));
 
   free(w_ivars);
   free(r_ivars);
