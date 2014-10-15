@@ -48,6 +48,7 @@ void readers(vector< ivar<int> > & iv)
     // __cilkrts_dump_stats(); 
     printf("====     Done spawning readers.\n");
     flag = 1;
+    __sync_synchronize();
 }
 
 int main(int argc, char **argv) 
@@ -66,6 +67,8 @@ int main(int argc, char **argv)
       cilk_spawn readers(all_ivars);
       cilk_sync;
       printf("====   All ivars read successfully.\n");
+      flag = 0;
+      __sync_synchronize();
 
       if (i == num_iters - 1) {
 	sum = 0;
