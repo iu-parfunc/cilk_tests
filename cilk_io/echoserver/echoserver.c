@@ -23,12 +23,13 @@
 
 void do_echo(int fd) {
   char recvbuf[BUF_MAX];
-  int rlen = 0;
-  int wlen = 0;
-  while (rlen >= 0 && wlen >= 0) {
+  int rlen = BUF_MAX;
+  int wlen = BUF_MAX;
+  while (rlen > 0 && wlen > 0) {
     rlen = cilk_read(fd, recvbuf, BUF_MAX);
     wlen = cilk_write(fd, recvbuf, rlen);
   }
+  close(fd);
 }
 
 void echo_server(int listen_fd) {
