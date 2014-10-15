@@ -38,7 +38,11 @@ known_testfails = [
 known_buildfails = [
    './cilk_tests/cilk_io/distfib',
    './cilk_tests/cilk_io/hello_world',
-   './cilk_tests/cilk_io/echoserver' ]
+   './cilk_tests/cilk_io/echoserver' ,
+   # Added after exposing silent failed builds:
+   './cilk_tests/ivar/benchmarks/wavefront',
+   './cilk_tests/ivar/libs/io/iotest',
+   './cilk_tests/ivar/benchmarks/server/cilk/distPfib' ]
 
 ignored_fails = []
 
