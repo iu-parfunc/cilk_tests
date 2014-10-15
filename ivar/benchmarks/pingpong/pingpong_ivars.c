@@ -9,8 +9,8 @@
 void ping(long id);
 void pong(long id);
 
-long iterations = 1000;
-long num_fibers = 1;
+long iterations = 10000;
+long num_fibers = 2;
 
 __cilkrts_ivar*  r_ivars;
 __cilkrts_ivar*  w_ivars;
@@ -24,8 +24,7 @@ void ping(long id) {
     // printf(" [ping] w_ivar[%ld] address : %p\n", id, &w_ivars[id]);
     // printf(" [ping] r_ivar[%ld] address : %p\n", id, &r_ivars[id]);
 
-    // printf(" [ping] writing to ivar %p\n", &w_ivars[id]);
-
+    printf(" [ping] writing to ivar %p\n", &w_ivars[id]);
 
     __cilkrts_ivar_write(&w_ivars[id], 1);
 
@@ -50,9 +49,9 @@ void pong(long id) {
     // __sync_synchronize();
     
     // printf(" [pong] writing to ivar %p\n", &r_ivars[id]);
+    printf(" [pong] progress[%ld] : %ld\n", id, progress[id]);
     __cilkrts_ivar_write(&r_ivars[id], 1);
 
-    // printf(" [pong] progress[%ld] : %ld\n", id, progress[id]);
 
     if (progress[id] >= iterations) {
       return;
@@ -72,7 +71,7 @@ int main(int argc, char **argv) {
   if (argc >= 2) num_fibers = atol(argv[1]);
   if (argc >= 3) iterations = atol(argv[2]);
 
-  printf(" [pingpong] Running benchmark with %ld fibers with %ld iterations each..\n", num_fibers, iterations);
+  printf(" [pingpong] Running benchmark with %ld fiber pairs with %ld iterations each..\n", num_fibers, iterations);
 
   r_ivars = malloc(sizeof(__cilkrts_ivar) * num_fibers);
 
@@ -106,6 +105,9 @@ int main(int argc, char **argv) {
     __cilkrts_ivar_clear(&r_ivars[i]);
   }
 
+  printf(" [pingpong] w_ivars[%d] address : %p\n", 0, &w_ivars[0]); 
+  printf(" [pingpong] r_ivars[%d] address : %p\n", 0, &r_ivars[0]); 
+
   TIMER_START(t);
 
   for (i = 0; i < num_fibers; i++) {
@@ -113,10 +115,18 @@ int main(int argc, char **argv) {
     cilk_spawn pong(i);
   }
 
+  printf(" [pingpong] Before cilk_sync\n");
+
   cilk_sync;
+
+  printf(" [pingpong] After cilk_sync\n");
 
   TIMER_STOP(t);
 
   printf(" [pingpong] time taken %f\n", TIMER_EVAL(t));
+
+  free(w_ivars);
+  free(r_ivars);
+  free(progress);
 
 }
