@@ -18,7 +18,7 @@ foreach(f ${SRC})
   get_filename_component(exec ${loc} NAME)
   add_executable(${exec} ${f})
   #target_link_libraries(${exec} dl pthread cilkrts $ENV{CILK_SRC}/lib/libevent.so)
-  target_link_libraries(${exec} dl pthread cilkrts ${LIBEVENT_LIBS})
+  target_link_libraries(${exec} dl pthread cilkrts ${LIBEVENT_LIBS1} ${LIBEVENT_LIBS2})
   list(APPEND executables "build/${exec}")
 endforeach(f)
 
