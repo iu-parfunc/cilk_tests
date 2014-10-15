@@ -3,7 +3,7 @@
 # Dynamic:
 CILK_SRC= ../../..
 LIBPATHS= -L$(CILK_SRC)/build/ -L$(CILK_SRC)/lib/
-LIBS= -levent -lcilkrts
+LIBS= -levent -levent_pthreads -lcilkrts
 
 # Simple example
 # main.exe: main.c

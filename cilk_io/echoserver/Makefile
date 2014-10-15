@@ -6,7 +6,7 @@
 CC = $(CONCURRENTCILK_CC)
 CFLAGS = -fcilkplus
 LIBPATHS= -L$(CILK_SRC)/build/ -L$(CILK_SRC)/deps/build/lib/
-LIBS= -levent -lcilkrts -lpthread -ldl
+LIBS= -levent -levent_pthreads -lcilkrts -lpthread -ldl
 
 # Simple example
 # echoserver.exe: echoserver.c
