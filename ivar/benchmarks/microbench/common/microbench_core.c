@@ -8,8 +8,6 @@
 #include <cycle.h>
 #include <timer.h>
 
-#define ALLOC_EMPTY_IVARS(size) calloc(size, sizeof(__cilkrts_ivar))
-
 void writer(__cilkrts_ivar *array, long num_fibers)
 {
   int i;
@@ -45,7 +43,7 @@ int main(int argc, char **argv){
   } else {
   num_fibers = 1000;
   }
-  __cilkrts_ivar *all_ivars = ALLOC_EMPTY_IVARS(num_fibers);
+  __cilkrts_ivar *all_ivars = __cilkrts_new_ivar_array(num_fibers);
   if(NULL == all_ivars) perror("CALLOC failed to allocate array\n");
 
   //printf("creating %d blocked fibers\n", num_fibers);
