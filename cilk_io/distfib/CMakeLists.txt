@@ -17,11 +17,9 @@ foreach(f ${SRC})
   string(REGEX REPLACE ".cpp$|.c$" ".exe" loc ${f})
   get_filename_component(exec ${loc} NAME)
   add_executable(${exec} ${f})
-  target_link_libraries(${exec} dl pthread cilkrts)
+  target_link_libraries(${exec} dl pthread cilkrts ${LIBEVENT_LIBS} )
   list(APPEND executables "build/${exec}")
 endforeach(f)
 
 install(PROGRAMS ${executables} DESTINATION "${CMAKE_SOURCE_DIR}/bin")
-
-
 
