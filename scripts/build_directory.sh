@@ -16,7 +16,9 @@ cmake \
 
 echo "CMake complete, exit code was $?"
 
-make && make install
+# For whatever reason "make && make install" leads to great trouble here:
+make 
+make install
 
 cd ..
 
