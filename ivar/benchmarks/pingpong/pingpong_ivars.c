@@ -105,8 +105,8 @@ int main(int argc, char **argv) {
     __cilkrts_ivar_clear(&r_ivars[i]);
   }
 
-  printf(" [pingpong] w_ivars[%d] address : %p\n", 0, &w_ivars[0]); 
-  printf(" [pingpong] r_ivars[%d] address : %p\n", 0, &r_ivars[0]); 
+  // printf(" [pingpong] w_ivars[%d] address : %p\n", 0, &w_ivars[0]); 
+  // printf(" [pingpong] r_ivars[%d] address : %p\n", 0, &r_ivars[0]); 
 
   TIMER_RESET(t);
   TIMER_START(t);
@@ -116,11 +116,11 @@ int main(int argc, char **argv) {
     cilk_spawn pong(i);
   }
 
-  printf(" [pingpong] Before cilk_sync\n");
+  // printf(" [pingpong] Before cilk_sync\n");
 
   cilk_sync;
 
-  printf(" [pingpong] After cilk_sync\n");
+  // printf(" [pingpong] After cilk_sync\n");
 
   TIMER_STOP(t);
 
