@@ -34,10 +34,12 @@ void do_echo(int fd) {
 
 void echo_server(int listen_fd) {
   char welcome[] = "Hello client!";
+  struct sockaddr_in addr;
+  socklen_t addr_len = sizeof(addr);
 
   while (1) {
     printf("Calling cilk_accept..\n");
-    int fd = cilk_accept(listen_fd);
+    int fd = cilk_accept(listen_fd, (struct sockaddr*)&addr, &addr_len);
     assert(fd >= 0);
     cilk_write(fd, welcome, strlen(welcome));
     cilk_spawn do_echo(fd);
