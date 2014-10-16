@@ -120,9 +120,7 @@ void acceptLoop()
 {
   int sd;
   struct sockaddr_in addr;
-  struct sockaddr_in caddr;
   socklen_t alen = sizeof(addr);
-  socklen_t clen = sizeof(caddr);
   short port = PORT_NUM;
   int sock_tmp;
   int current_worker = 0;
@@ -150,7 +148,7 @@ void acceptLoop()
   }
   while(1) {
     /*if (-1 == (sock_tmp = accept(sd, (struct sockaddr*)&addr, &alen))) {*/
-    if (-1 == (sock_tmp = cilk_accept(sd, (struct sockaddr*)&caddr, clen))) {
+    if (-1 == (sock_tmp = cilk_accept(sd, (struct sockaddr*)&addr, &alen))) {
       printf("Error %d doing accept", errno);
       exit(-1);
     }
