@@ -55,13 +55,13 @@ class matrix {
 
     tile *get(int i, int j) {
       ivar<tile*> tmp = ((*mat))[i * dim + j];
-      dbgprintf("READ ivar struct %p\n", *tmp.get_underlying_ivar());
+      dbgprintf("READ ivar struct %p\n", (void*)(*tmp.get_underlying_ivar()));
       return tmp.get();
     }
 
     void put(int i, int j, tile* val) {
       ivar <tile*> tmp = (*mat)[i * dim + j];
-      dbgprintf("WRITE putting value 0x%d at (%i,%i) ivar: %p\n", val, i,j, *tmp.get_underlying_ivar());
+      dbgprintf("WRITE putting value 0x%p at (%i,%i) ivar: %p\n", val, i,j, (void*)(*tmp.get_underlying_ivar()));
       tmp.put(val);
     }
 

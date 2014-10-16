@@ -14,7 +14,7 @@ using namespace std;
 int dim = 2;
 int tiledim = 2;
 int reps = 1; // An intensifying coefficient.
-char* version = "parfor2";
+const char* version = "parfor2";
 
 static const int dbg = 0;
 
@@ -103,6 +103,16 @@ void do_tile(int i, int j)
     }
 
     matrix_put(i,j, t);
+}
+
+// Version 0: just do the sequential thing.
+void sequential() 
+{
+    if(dbg) printf(" *** Begin SEQUENTIAL traversal to fill matrix: for | for | spawn\n");
+    for (int i=0; i < dim; i++) 
+    for (int j=0; j < dim; j++) 
+       cilk_spawn do_tile(i,j);
+    if(dbg) printf("Done with sequential traversal...\n");
 }
 
 // Version 1:
@@ -282,10 +292,11 @@ int main(int argc, char** argv)
 {
   my_timer_t t;
   ticks start, end;
-    if (argc > 5)
+  TIMER_RESET(t);
+  printf("Usage: %s mode matrixDimension tileDimension reps\n", argv[0]);
+  printf("  mode one of { parfor1 parfor2 dnc cones }\n");
+  if (argc > 5)
     {
-        printf("Usage: %s mode matrixDimension tileDimension reps\n", argv[0]);
-        printf("  mode one of { parfor1 parfor2 dnc cones }\n");
         exit(-1);
     }
     if (argc > 1)  version = argv[1];
@@ -314,7 +325,15 @@ int main(int argc, char** argv)
     //(*matrix)[0].put( new tile() );
     //printf("Filled in initial tile.\n");
 
-    if(! strcmp("parfor1",version) ) {// cilk_spawn
+    if(! strcmp("sequential",version) ) {
+
+      TIMER_START(t);
+      start = getticks(); 
+      sequential();
+      end = getticks();
+      TIMER_STOP(t);
+
+    } else if(! strcmp("parfor1",version) ) {// cilk_spawn
      // warm things up
 //      traverse1();
  //     cilk_sync;
@@ -378,9 +397,10 @@ int main(int argc, char** argv)
 
     //printf("Beginning to consume matrix results...\n");
     unsigned long long sum = sum_matrix();
-   printf("Read all positions, summed to: %lu\n", sum);
+    printf("Read all positions, summed to: %llu\n", sum);
 
     //printf("Done with matrix test.  Successfull.\n");
+    printf("SELFTIMED: %lf\n",TIMER_EVAL(t));
     printf("%d\t%f\t%lf\n", dim, TIMER_EVAL(t), elapsed(end,start));
     return 0;
 }
