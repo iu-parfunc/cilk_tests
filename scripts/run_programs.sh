@@ -8,7 +8,7 @@ set -e
 # suite.
 
 # set -e 
-RUNARGS=$1
+RUNARGS=$*
 
 EXES=`ls bin | grep .exe`
 
