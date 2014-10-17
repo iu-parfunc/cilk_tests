@@ -112,6 +112,9 @@ void *workerLoop(int epfd) {
           exit(-1);
         }
       }
+    } else {
+       close(epfd);
+       break;
     }
   }
 }
