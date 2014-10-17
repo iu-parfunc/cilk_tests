@@ -28,27 +28,35 @@ void* ping(void *ptr) {
 
   while (1) {
 
-    // // printf(" [ping] w_ivar[%ld] address : %p\n", id, &w_ivars[id]);
-    // // printf(" [ping] r_ivar[%ld] address : %p\n", id, &r_ivars[id]);
-
     pthread_mutex_lock(&locks[id]);
 
+#ifdef DEBUG
     printf(" [ping] producer %ld acquired mutex..\n", id);
     fflush(stdout);
+#endif
 
     while (shared[id] > 0) {
+
+#ifdef DEBUG
       printf(" [ping] producer %ld going to wait..\n", id);
       fflush(stdout);
+#endif
       pthread_cond_wait(&condp[id], &locks[id]);
     }
 
     shared[id]++;
 
+#ifdef DEBUG
     printf(" [ping] unlocking the mutex %ld..\n", id);
     fflush(stdout);
+#endif
     pthread_mutex_unlock(&locks[id]);
+
+#ifdef DEBUG
     printf(" [ping] signalling consumer %ld..\n", id);
     fflush(stdout);
+#endif
+
     pthread_cond_signal(&condc[id]);
 
     __sync_fetch_and_add(&progress[id], 1);
@@ -57,9 +65,11 @@ void* ping(void *ptr) {
       shared[id]++;
       pthread_mutex_unlock(&locks[id]);
       pthread_cond_signal(&condc[id]);
+
+#ifdef DEBUG
       printf("[ping] producer %ld exiting... $$$$$$$$$$\n", id);
       fflush(stdout);
-      // __cilkrts_ivar_write(&w_ivars[id], 1); // Unblocks the consumer so it can finish
+#endif
       pthread_exit(NULL);
     }
   }
@@ -71,36 +81,40 @@ void* pong(void* ptr) {
 
   while (1) {
 
-    // __cilkrts_ivar_read(&w_ivars[id]);
-    // __cilkrts_ivar_clear(&w_ivars[id]);
-    
     pthread_mutex_lock (&locks[id]);
+
+#ifdef DEBUG
     printf(" [pong] consumer %ld acquired mutex..\n", id);
     fflush(stdout);
+#endif
     
     while (shared[id] == 0) {
+#ifdef DEBUG
       printf(" [pong] consumer %ld going to wait..\n", id);
       fflush(stdout);
+#endif
       pthread_cond_wait(&condc[id], &locks[id]);
     }
 
     shared[id]--;
 
+#ifdef DEBUG
     printf(" [pong] signalling producer %ld..\n", id);
     fflush(stdout);
+#endif
+
     pthread_mutex_unlock(&locks[id]);
     pthread_cond_signal(&condp[id]);
 
-    // __sync_synchronize();
-    
-    // // printf(" [pong] writing to ivar %p\n", &r_ivars[id]);
+#ifdef DEBUG
     printf(" [pong] progress[%ld] : %ld\n", id, progress[id]);
-    // __cilkrts_ivar_write(&r_ivars[id], 1);
-
+#endif
 
     if (progress[id] >= iterations) {
+#ifdef DEBUG
       printf("[pong] consumer %ld exiting... ^^^^^^^^^^^^^^^\n", id);
       fflush(stdout);
+#endif
 
       pthread_exit(NULL);
     }
