@@ -715,6 +715,7 @@ int main(int argc, char *argv[])
      REAL *A, *B, *C1, *C2;
      int verify, benchmark, help, n;
      timer_t t;
+     TIMER_RESET(t);
 
      /*
      Cilk_time tm_begin, tm_elapsed;
@@ -785,7 +786,7 @@ int main(int argc, char *argv[])
 	   printf("\nCilk Example: strassen\n");
 	   //printf("	      running on %d processor%s\n\n", Cilk_active_size, Cilk_active_size > 1 ? "s" : "");
 	   printf("Options: n = %d\n\n", n);
-     printf("Time:%4f\n", TIMER_EVAL(t));
+     printf("SELFTIMED: %lf\n", TIMER_EVAL(t));
 	   //printf("Running time  = %4f s\n", Cilk_wall_time_to_sec(tm_elapsed));
 	   //printf("Work          = %4f s\n", Cilk_time_to_sec(wk_elapsed));
 	   //printf("Critical path = %4f s\n\n", Cilk_time_to_sec(cp_elapsed));
