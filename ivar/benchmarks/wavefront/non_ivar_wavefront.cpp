@@ -14,7 +14,7 @@ using namespace std;
 int dim = 2;
 int tiledim = 2;
 int reps = 1; // An intensifying coefficient.
-const char* version = "parfor2";
+const char* version = "dnc";
 
 static const int dbg = 0;
 
@@ -110,35 +110,10 @@ void sequential()
 {
     if(dbg) printf(" *** Begin SEQUENTIAL traversal to fill matrix: for | for | spawn\n");
     for (int i=0; i < dim; i++) 
-    for (int j=0; j < dim; j++) 
-       cilk_spawn do_tile(i,j);
+    for (int j=0; j < dim; j++) do_tile(i,j);
     if(dbg) printf("Done with sequential traversal...\n");
 }
 
-// Version 1:
-// Walk over the matrix with naive traversal, spawning all jobs:
-void traverse1() 
-{
-    if(dbg) printf(" *** Begin parallel traversal to fill matrix: cilk_for | cilk_for | spawn\n");
-    cilk_for (int i=0; i < dim; i++) 
-    cilk_for (int j=0; j < dim; j++) 
-       cilk_spawn do_tile(i,j);
-    if(dbg) printf("Done with parallel traversal...\n");
-}
-
-// Version 1B: Less spawning.
-void do_row(int i) {
-  for (int j=0; j < dim; j++) 
-     do_tile(i,j);
-}
-void traverse2() 
-{
-    if(dbg) printf(" *** Begin parallel traversal to fill matrix: for/spawn | for | \n");
-    for (int i=0; i < dim; i++) 
-      // In this version the theif will steal the next row:
-      cilk_spawn do_row(i);
-    if(dbg) printf("Done with parallel traversal...\n");
-}
 
 // for error checking in divide and conquer
 int isPowerOfTwo (unsigned int x)
@@ -294,7 +269,7 @@ int main(int argc, char** argv)
   ticks start, end;
   TIMER_RESET(t);
   printf("Usage: %s mode matrixDimension tileDimension reps\n", argv[0]);
-  printf("  mode one of { parfor1 parfor2 dnc cones }\n");
+  printf("  mode one of { sequential dnc cones }\n");
   if (argc > 5)
     {
         exit(-1);
@@ -333,29 +308,7 @@ int main(int argc, char** argv)
       end = getticks();
       TIMER_STOP(t);
 
-    } else if(! strcmp("parfor1",version) ) {// cilk_spawn
-     // warm things up
-//      traverse1();
- //     cilk_sync;
-
-      TIMER_START(t);
-      start = getticks(); 
-      traverse1();
-      end = getticks();
-      TIMER_STOP(t);
-
-    } else if(! strcmp("parfor2",version) ) { // cilk_spawn
-      // warm things up
-  //    traverse2();
-   //   cilk_sync;
-     
-      TIMER_START(t);
-        start = getticks(); 
-        traverse2();
-        end = getticks();
-        TIMER_STOP(t);
-
-      }else if(! strcmp("cones",version) ) {// cilk_spawn
+    } else if(! strcmp("cones",version) ) {// cilk_spawn
       // warm things up
     //    spawn_cones();
      //   cilk_sync;
