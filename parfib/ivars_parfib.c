@@ -47,7 +47,8 @@ int main(int argc, char** argv) {
 
   ivar iv;
   CLEARIV(&iv);
-  
+
+  TIMER_RESET(t);  
   TIMER_START(t);
   ticks t1 = getticks();
   pfib(&iv, n);
