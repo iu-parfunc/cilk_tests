@@ -3,11 +3,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <err.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -77,12 +79,39 @@ size_t RESPONSE_LEN;
 
 // global variables
 
+volatile int num_clients;
+volatile unsigned int num_requests;
+__thread unsigned int nreq = 0;
+double start_time;
+double end_time;
+
 #if !(defined SHOW_PEAK_PERFORMANCE)
 int evfd = -1;
 #endif
 
 struct worker_info workers[MAX_NUM_WORKERS];
 int sockets[NUM_CLIENTS];
+
+static inline
+double getticks(void) {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (double) (tv.tv_sec * 1e6 + tv.tv_usec);
+}
+
+static inline
+double elapsed(double t1, double t0) {
+  return (double) (t1 - t0);
+}
+
+static void
+server_shutdown(void) {
+    end_time = elapsed(getticks(), start_time);
+    printf("Number of requests: %u.\n", num_requests);
+    // Throughput
+    printf("SELFTIMED: %lf\n", num_requests*1e6/end_time);
+    exit(EXIT_SUCCESS);
+}
 
 int main(int argc, char *argv[]) {
   if (argc != 3) {
@@ -104,6 +133,10 @@ int main(int argc, char *argv[]) {
     printf("error: number of workers must be less than %d\n", MAX_NUM_WORKERS);
     return -1;
   }
+
+  num_clients = -1;
+  num_requests = 0;
+  //atexit(server_shutdown);
 
   startWorkers(numWorkers);
 #if !(defined SHOW_PEAK_PERFORMANCE)
@@ -162,6 +195,8 @@ void *workerLoop(void * arg) {
       exit(0);
 #endif
       receiveLoop(sock, epfd, recvbuf);
+      if (num_clients == 0)
+        server_shutdown();
     }
   }
   pthread_exit(NULL);
@@ -175,8 +210,11 @@ void receiveLoop(int sock, int epfd, char recvbuf[]) {
 
   while(1) {
     m = recv(sock, recvbuf, remaining, 0);
-    if (m==0) break;
-    if (m > 0) {
+    if (m==0) {
+        __sync_fetch_and_sub(&num_clients, 1);
+        __sync_fetch_and_add(&num_requests, nreq);
+        break;
+    } else if (m > 0) {
       remaining = remaining - m;
       if (remaining == 0) {
         remaining = EXPECTED_RECV_LEN;
@@ -195,13 +233,13 @@ void receiveLoop(int sock, int epfd, char recvbuf[]) {
           exit(-1);
         }
 #endif
-      } //else {
-      //      if (remaining < 0) {
-      //	perror("remaining < 0");
-      //      }
-      //perror("partial recv");
-      //exit(-1);
-      //}
+      } else {
+           if (remaining < 0) {
+      	perror("remaining < 0");
+           }
+      perror("partial recv");
+      exit(-1);
+      }
     }
     if (m==-1) {
       if (errno==EAGAIN) {
@@ -218,6 +256,7 @@ void receiveLoop(int sock, int epfd, char recvbuf[]) {
         exit(-1);
       }
     }
+    nreq++;
   }
 }
 
@@ -337,6 +376,11 @@ void acceptLoop(int numWorkers)
     event.data.fd = sock_tmp;
     event.events = EPOLLIN | EPOLLET | EPOLLONESHOT;
     epoll_ctl(workers[current_worker].efd, EPOLL_CTL_ADD, sock_tmp, &event);
+    if (num_clients == -1) {
+      __sync_fetch_and_add(&num_clients, 1);
+      start_time = getticks();
+    }
+    __sync_fetch_and_add(&num_clients, 1);
     current_client++;
     current_worker = (current_worker + 1) % numWorkers;
   }

@@ -58,6 +58,7 @@ int main(int argc, char** argv) {
 
   // RRN: I don't think the other versions use SELFTIMED yet, so this isn't fair:
   // printf("SELFTIMED: %lf\n", real);
+  printf("SELFTIMED: %lf\n", TIMER_EVAL(t));
   printf("TOTAL_WORKERS: %d\n", __cilkrts_get_total_workers());
 
   // TIMER_EVAL(t), elapsed(t2,t1), __cilkrts_get_total_workers());

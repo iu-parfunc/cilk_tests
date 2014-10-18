@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <err.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -7,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <pthread.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
@@ -18,6 +20,12 @@
 void acceptLoop();
 void *workerLoop(void *);
 void receiveLoop(int, char []);
+
+volatile int num_clients;
+volatile unsigned int num_requests;
+__thread unsigned int nreq = 0;
+double start_time;
+double end_time;
 
 // constants
 #define MAX_NUM_WORKERS 120
@@ -48,6 +56,27 @@ char RESPONSE[] =
 "<body bgcolor=\"white\" text=\"black\">\n"
 "<center><h1>Welcome to nginx!</h1></center>\n</body>\n</html>\n";
 
+static inline
+double getticks(void) {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (double) (tv.tv_sec * 1e6 + tv.tv_usec);
+}
+
+static inline
+double elapsed(double t1, double t0) {
+  return (double) (t1 - t0);
+}
+
+static void
+server_shutdown(void) {
+    end_time = elapsed(getticks(), start_time);
+    printf("Number of requests: %u.\n", num_requests);
+    // Throughput
+    printf("SELFTIMED: %lf\n", num_requests*1e6/end_time);
+    exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char *argv[]) {
   if (argc != 3) {
     printf( "usage: %s #workers <port number>\n", argv[0] );
@@ -69,6 +98,10 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
+  num_clients = -1;
+  num_requests = 0;
+  //atexit(server_shutdown);
+
   acceptLoop();
   return 0;
 }
@@ -82,6 +115,8 @@ void *workerLoop(void * arg) {
   char recvbuf[1000];
 
   receiveLoop(epfd, recvbuf);
+  if (num_clients == 0)
+    server_shutdown();
 }
 
 void receiveLoop(int sock, char recvbuf[]) {
@@ -91,8 +126,11 @@ void receiveLoop(int sock, char recvbuf[]) {
 
   while(1) {
     m = recv(sock, recvbuf, remaining, 0);
-    if (m==0) break;
-    if (m > 0) {
+    if (m==0) {
+      __sync_fetch_and_sub(&num_clients, 1);
+      __sync_fetch_and_add(&num_requests, nreq);
+      break;
+    } else if (m > 0) {
       remaining = remaining - m;
       if (remaining == 0) {
         remaining = EXPECTED_RECV_LEN;
@@ -108,6 +146,7 @@ void receiveLoop(int sock, char recvbuf[]) {
         }
       }
     }
+    nreq++;
   }
 }
 
@@ -146,6 +185,11 @@ void acceptLoop()
       printf("Error %d doing accept", errno);
       exit(-1);
     }
+    if (num_clients == -1) {
+      __sync_fetch_and_add(&num_clients, 1);
+      start_time = getticks();
+    }
+    __sync_fetch_and_add(&num_clients, 1);
     cilk_spawn workerLoop((void*)(unsigned long)sock_tmp);
   }
 }

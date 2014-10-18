@@ -6,6 +6,7 @@
 #include "../../common/timer.h"
 #include "../../common/cycle.h"
 #include "../perturb.h"
+#include "../getoptions.h"
 
 #define NUM_OPTIONS 20*1000*1000
 #define SEED  7676767 // or whatever your heart so desires....
@@ -95,7 +96,9 @@ double sum (double arr [NUM_OPTIONS]){
   return ret;
 }
 
-// runt with 2333300 500000
+char *specifiers[] = {"-p", "-l", 0};
+int opt_types[] = {LONGARG, LONGARG, 0};
+// runt with -p 2333300 -l 500000
 int main (int argc, char** argv){
   double* S = new double [NUM_OPTIONS];
   double* K = new double [NUM_OPTIONS];
@@ -106,14 +109,23 @@ int main (int argc, char** argv){
   my_timer_t t;
   double r = 0.10;
   double sigma = 0.30;
+  int help;
 
-  if (argc >= 2) {
-    prob = atoi(argv[1]);
-    length = atoi(argv[2]);
-  } else {
-    prob = 0;
-    length = 0;
+  /*
+   *if (argc >= 2) {
+   *  prob = atoi(argv[1]);
+   *  length = atoi(argv[2]);
+   *} else {
+   *  prob = 0;
+   *  length = 0;
+   *}
+   */
+
+  get_options(argc, argv, specifiers, opt_types, &prob, &length, &help);
+  if (help) {
+    exit(-1);
   }
+
 #ifdef CILK_BLOCK
   cilk_io_init();
 #endif

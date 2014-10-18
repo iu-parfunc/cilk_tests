@@ -2,11 +2,13 @@
 #include <cilk/concurrent_cilk.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <err.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -19,6 +21,12 @@
 void acceptLoop();
 void startWorkerThread(int);
 void *workerLoop(int);
+
+volatile int num_clients;
+volatile int num_requests;
+__thread unsigned int nreq = 0;
+double start_time;
+double end_time;
 
 // constants
 #define MAX_NUM_WORKERS 120
@@ -53,6 +61,28 @@ char RESPONSE[] =
 int evfd = -1;
 #endif
 
+static inline
+double getticks(void) {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (double) (tv.tv_sec * 1e6 + tv.tv_usec);
+}
+
+static inline
+double elapsed(double t1, double t0) {
+  return (double) (t1 - t0);
+}
+
+static void
+server_shutdown(void) {
+    end_time = elapsed(getticks(), start_time);
+    printf("Number of requests: %u.\n", num_requests);
+    // Throughput
+    printf("SELFTIMED: %lf\n", num_requests*1e6/end_time);
+    cilk_io_teardown();
+    exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char *argv[]) {
   if (argc != 3) {
     printf( "usage: %s #workers <port number>\n", argv[0] );
@@ -77,6 +107,10 @@ int main(int argc, char *argv[]) {
     printf("error: number of workers must be less than %d\n", MAX_NUM_WORKERS);
     return -1;
   }
+
+  num_clients = -1;
+  num_requests = 0;
+  //atexit(server_shutdown);
 
   cilk_spawn acceptLoop();
   cilk_sync;
@@ -112,10 +146,15 @@ void *workerLoop(int epfd) {
           exit(-1);
         }
       }
-    } else {
+    } else if (m == 0) {
        close(epfd);
+       i = __sync_sub_and_fetch(&num_clients, 1);
+       __sync_fetch_and_add(&num_requests, nreq);
+       if (i == 0)
+         server_shutdown();
        break;
     }
+    nreq++;
   }
 }
 
@@ -155,6 +194,11 @@ void acceptLoop()
       printf("Error %d doing accept", errno);
       exit(-1);
     }
+    if (num_clients == -1) {
+      __sync_fetch_and_add(&num_clients, 1);
+      start_time = getticks();
+    }
+    __sync_fetch_and_add(&num_clients, 1);
     cilk_spawn workerLoop(sock_tmp);
   }
 }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <err.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -7,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <pthread.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
@@ -37,6 +39,12 @@ int EXPECTED_RECV_LEN;
 int PORT_NUM;
 size_t RESPONSE_LEN;
 
+volatile int num_clients;
+volatile int num_requests;
+__thread unsigned int nreq = 0;
+double start_time;
+double end_time;
+
 char RESPONSE[] =
 "HTTP/1.1 200 OK\r\n"
 "Date: Tue, 09 Oct 2012 16:36:18 GMT\r\n"
@@ -51,6 +59,28 @@ char RESPONSE[] =
 #if !(defined SHOW_PEAK_PERFORMANCE)
 int evfd = -1;
 #endif
+
+static inline
+double getticks(void) {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (double) (tv.tv_sec * 1e6 + tv.tv_usec);
+}
+
+static inline
+double elapsed(double t1, double t0) {
+  return (double) (t1 - t0);
+}
+
+static void
+server_shutdown(void) {
+    end_time = elapsed(getticks(), start_time);
+    printf("Number of requests: %u.\n", num_requests);
+    // Throughput
+    printf("SELFTIMED: %lf\n", num_requests*1e6/end_time);
+    exit(EXIT_SUCCESS);
+}
+
 
 int main(int argc, char *argv[]) {
   if (argc != 3) {
@@ -72,6 +102,10 @@ int main(int argc, char *argv[]) {
     printf("error: number of workers must be less than %d\n", MAX_NUM_WORKERS);
     return -1;
   }
+
+  num_clients = -1;
+  num_requests = 0;
+  //atexit(server_shutdown);
 
   acceptLoop();
   return 0;
@@ -102,6 +136,7 @@ void receiveLoop(int sock, char recvbuf[]) {
   ssize_t m;
   int numSent;
   int remaining = EXPECTED_RECV_LEN;
+  int nc;
 
   while(1) {
     m = recv(sock, recvbuf, remaining, 0);
@@ -120,7 +155,13 @@ void receiveLoop(int sock, char recvbuf[]) {
           exit(-1);
         }
       }
+    } else if (m == 0) {
+      nc = __sync_sub_and_fetch(&num_clients, 1);
+      __sync_fetch_and_add(&num_requests, nreq);
+      if (nc == 0)
+        server_shutdown();
     }
+    nreq++;
   }
 }
 
@@ -159,6 +200,11 @@ void acceptLoop()
       printf("Error %d doing accept", errno);
       exit(-1);
     }
+    if (num_clients == -1) {
+      __sync_fetch_and_add(&num_clients, 1);
+      start_time = getticks();
+    }
+    __sync_fetch_and_add(&num_clients, 1);
     startWorkerThread(sock_tmp);
   }
 }

@@ -45,6 +45,7 @@ int main(int argc, char *argv[]) {
 
   int initial_thread_return_value;
 
+  TIMER_RESET(t);
   TIMER_START(t);
   ticks start = getticks();
   thread_create_status = pthread_create (&initial_thread, NULL, (void *)fibonacci, (void *)&number);
@@ -55,6 +56,7 @@ int main(int argc, char *argv[]) {
   result = (int *)malloc(sizeof(int *));
   result = (int *)initial_thread_return_value;
 
+  printf("SELFTIMED: %lf\n", TIMER_EVAL(t));
   printf("%d\t%f\t%lf\n", n, TIMER_EVAL(t), elapsed(end,start));
   //printf("The fibonacci for %d is : %d \t time take: %f\n",number ,*result, TIMER_EVAL(t)); 
   return 0;

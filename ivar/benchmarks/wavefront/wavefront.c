@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <cilk/cilk.h>
 #include <cilk/concurrent_cilk.h>
+#include <cilk/cilk_undocumented.h>
 #include <timer.h>
 #include <cycle.h>
 #include <string.h>
@@ -194,6 +195,8 @@ int main(int argc, char **argv) {
   long result = sum_tile((tile*) read_iv(&(mat[i * MATRIX_DIM + (j-1)])));
   printf(" ... we get %ld\n", result);
   free(mat);
+
+  __cilkrts_dump_stats();
   return 0;
 }
 
