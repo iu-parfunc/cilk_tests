@@ -16,6 +16,6 @@ SERVER_IP=`getent hosts | grep -m 1 $SERVER_HOSTNAME | awk '{printf $1}'`
 
 echo "Spawning 1 server and $NUM_CLIENTS client(s)"
 
-pbsdsh -n $NUM_CLIENTS $MYPATH/$WHICHSERVER $NUMWORKERS $PORT
+pbsdsh -v -n $NUM_CLIENTS $MYPATH/$WHICHSERVER $NUMWORKERS $PORT
 sleep 1
-pbsdsh -c $NUM_CLIENTS weighttp -n 100000 -c 128 -k $SERVER_IP:$PORT
+pbsdsh -v -c $NUM_CLIENTS weighttp -n 100000 -c 128 -k $SERVER_IP:$PORT
