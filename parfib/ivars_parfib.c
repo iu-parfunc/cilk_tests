@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
   TIMER_STOP(t);
 
   printf("result: %ld\t", j);
+  printf("SELFTIMED: %lf\n", TIMER_EVAL(t));
   printf("%d\t%f\t%lf\t%d\n", n, TIMER_EVAL(t), elapsed(t2,t1), __cilkrts_get_total_workers());
   //printf("%d\t%f\n", n, TIMER_EVAL(t));
   __cilkrts_dump_stats();
