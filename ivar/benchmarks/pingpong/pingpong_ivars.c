@@ -4,6 +4,8 @@
 
 #include <cilk/cilk.h>
 #include <cilk/concurrent_cilk.h>
+// For dump_stats:
+#include <cilk/cilk_undocumented.h>
 #include "../../../common/timer.h"
 
 void ping(long id);
@@ -125,6 +127,8 @@ int main(int argc, char **argv) {
   TIMER_STOP(t);
 
   printf("SELFTIMED: %f\n", TIMER_EVAL(t));
+
+  __cilkrts_dump_stats();
 
   free(w_ivars);
   free(r_ivars);
