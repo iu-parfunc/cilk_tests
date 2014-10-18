@@ -19,6 +19,8 @@ __cilkrts_ivar*  w_ivars;
 
 long* progress;
 
+volatile int all_done = 0;
+
 void ping(long id) {
 
   while (1) {
@@ -68,34 +70,13 @@ void pong(long id) {
  *
  * */
 
-int main(int argc, char **argv) {
+void waste_one_core() {
+  printf(" CORE WASTER: put this core in a busywait until we're signaled...\n");
+  while(!all_done) { }
+  printf(" CORE WASTER: all done spinning, returning now.\n");
+}
 
-  if (argc >= 2) num_fibers = atol(argv[1]);
-  if (argc >= 3) iterations = atol(argv[2]);
-
-  printf(" [pingpong] Running benchmark with %ld fiber pairs with %ld iterations each..\n", num_fibers, iterations);
-
-  r_ivars = malloc(sizeof(__cilkrts_ivar) * num_fibers);
-
-  if (r_ivars == NULL) {
-    printf(" [pingpong] Failed allocating ivars. Aborting benchmark..\n");
-    exit(-1);
-  }
-
-  w_ivars = malloc(sizeof(__cilkrts_ivar) * num_fibers);
-
-  if (w_ivars == NULL) {
-    printf(" [pingpong] Failed allocating ivars. Aborting benchmark..\n");
-    exit(-1);
-  }
-
-  progress = malloc(sizeof(long) * num_fibers);
-
-  if (progress == NULL) {
-    printf(" [pingpong] Failed allocating progress indicators. Aborting benchmark..\n");
-    exit(-1);
-  }
-
+void run_benchmark() {
   my_timer_t t;
 
   int i;
@@ -121,17 +102,45 @@ int main(int argc, char **argv) {
   // printf(" [pingpong] Before cilk_sync\n");
 
   cilk_sync;
-
   // printf(" [pingpong] After cilk_sync\n");
-
   TIMER_STOP(t);
-
   printf("SELFTIMED: %f\n", TIMER_EVAL(t));
+}
 
-  __cilkrts_dump_stats();
+int main(int argc, char **argv) {
 
+  if (argc >= 2) num_fibers = atol(argv[1]);
+  if (argc >= 3) iterations = atol(argv[2]);
+
+  printf(" [pingpong] Running benchmark with %ld fiber pairs with %ld iterations each..\n", num_fibers, iterations);
+
+  r_ivars = malloc(sizeof(__cilkrts_ivar) * num_fibers);
+  if (r_ivars == NULL) {
+    printf(" [pingpong] Failed allocating ivars. Aborting benchmark..\n");
+    exit(-1);
+  }
+
+  w_ivars = malloc(sizeof(__cilkrts_ivar) * num_fibers);
+  if (w_ivars == NULL) {
+    printf(" [pingpong] Failed allocating ivars. Aborting benchmark..\n");
+    exit(-1);
+  }
+
+  progress = malloc(sizeof(long) * num_fibers);
+  if (progress == NULL) {
+    printf(" [pingpong] Failed allocating progress indicators. Aborting benchmark..\n");
+    exit(-1);
+  }
+
+  // Turning OFF for now.  Something is wrong and it makes it twice as slow [2014.10.18].
+  if(0) cilk_spawn waste_one_core();
+  run_benchmark();
+  // Tell the wasted core to quit it:
+  all_done = 1; __sync_synchronize();
+  cilk_sync; // Wait for the waster to come back.
   free(w_ivars);
   free(r_ivars);
   free(progress);
+  __cilkrts_dump_stats();
+} 
 
-}
