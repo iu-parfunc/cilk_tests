@@ -53,7 +53,7 @@ if (NOT ${CMAKE_C_COMPILER} MATCHES "clang")
 endIf()
 
 # base flags for C/C++ that are used irrespective of build type
-set(BASE_C_FLAGS "-Wall -std=c99")
+set(BASE_C_FLAGS "-Wall -std=c99 ")
 set(BASE_CXX_FLAGS "-Wall")
 
 #clang needs -fcilkplus defined
@@ -66,6 +66,7 @@ set(EXTRA_RELEASE_C_FLAGS "-O3")
 set(EXTRA_RELEASE_CXX_FLAGS "-O3")
 set(LIBEVENT_LIBS1 "$ENV{CILK_SRC}/deps/build/lib/libevent.so")
 set(LIBEVENT_LIBS2 "$ENV{CILK_SRC}/deps/build/lib/libevent_pthreads.so")
+set(PROFILER "$ENV{CILK_SRC}/install/lib/libprofiler.so")
 
 #C Additions
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${BASE_C_FLAGS}")

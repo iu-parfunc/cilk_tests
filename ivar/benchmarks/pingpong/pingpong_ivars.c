@@ -9,6 +9,10 @@
 #include "../../../common/timer.h"
 #include <pthread.h>
 
+#ifdef CCILK_PROFILE
+#include <google/profiler.h>
+#endif
+
 void ping(long id);
 void pong(long id);
 
@@ -32,7 +36,7 @@ void ping(long id) {
 
     // printf(" [ping] writing to ivar %p\n", &w_ivars[id]);
 
-    __cilkrts_ivar_write(&w_ivars[id], 1);
+    cilk_spawn __cilkrts_ivar_write(&w_ivars[id], 1);
 
     __cilkrts_ivar_read(&r_ivars[id]);
     __cilkrts_ivar_clear(&r_ivars[id]);
@@ -96,6 +100,9 @@ void run_benchmark() {
   TIMER_RESET(t);
   TIMER_START(t);
 
+#ifdef CCILK_PROFILE
+  ProfilerStart("./pingpong_ivars.prof");
+#endif
   for (i = 0; i < num_fibers; i++) {
     cilk_spawn ping(i);
     cilk_spawn pong(i);
@@ -105,6 +112,10 @@ void run_benchmark() {
 
   cilk_sync;
   // printf(" [pingpong] After cilk_sync\n");
+
+#ifdef CCILK_PROFILE
+  ProfilerStop();
+#endif
   TIMER_STOP(t);
   printf("SELFTIMED: %f\n", TIMER_EVAL(t));
 }
