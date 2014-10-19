@@ -5,9 +5,8 @@ fail ="0"
 success ="0"
 failed_tests = "";
 succeeded_tests ="";
-dir="$1/*.exe";
 
-for exe in $(ls $dir); do
+for exe in $(ls *.exe); do
   ./$exe;
   CODE=$?;
   if [ "$CODE" != 0 ] && [ "$CODE" != 21 ];
@@ -30,4 +29,4 @@ printf "Failed Tests: %s\n" "$failed_tests";
 printf "Succeeded Tests: %s\n" $succeeded_tests;
 }
 
-run_all $1
+run_all
