@@ -234,11 +234,10 @@ void receiveLoop(int sock, int epfd, char recvbuf[]) {
         }
 #endif
       } else {
-           if (remaining < 0) {
-      	perror("remaining < 0");
-           }
-      perror("partial recv");
-      exit(-1);
+        if (remaining < 0) {
+          perror("remaining < 0");
+        }
+        continue;
       }
     }
     if (m==-1) {
