@@ -1,8 +1,11 @@
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <timer.h>
 #include <cycle.h>
+
+int perturbation_point;
 
 void *fibonacci(void *n) { 
   
@@ -24,6 +27,12 @@ void *fibonacci(void *n) {
     thread_create_status = pthread_create(&pthread_fib_thread_1, NULL, (void *)fibonacci, (void *)&number_less_one);
     thread_create_status = pthread_create(&pthread_fib_thread_2, NULL, (void *)fibonacci, (void *)&number_less_two);
 
+#ifdef PERTURB_PTHREAD_SLEEP 
+    if (*fib == perturbation_point) {
+      usleep(5000);
+    }
+#endif
+
     thread_join_status = pthread_join(pthread_fib_thread_1, &thread_1_return_value);
     thread_join_status = pthread_join(pthread_fib_thread_2, &thread_2_return_value);
 
@@ -37,7 +46,19 @@ void *fibonacci(void *n) {
 }
 
 int main(int argc, char *argv[]) { 
-  int number = atoi(argv[1]);
+  int number;
+  if (argc > 1) {
+    number = atoi(argv[1]);
+  } else {
+    number = 42;
+  }
+
+  if (argc > 2) {
+    perturbation_point = atoi(argv[2]);
+  } else {
+    perturbation_point = number/2;
+  }
+
   int *result, thread_create_status, thread_join_status;
   int n = number;
   my_timer_t t;
