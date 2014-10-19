@@ -60,6 +60,17 @@ char RESPONSE[] =
 int evfd = -1;
 #endif
 
+#ifdef PTHREAD_PTHREAD_VARIANT
+#define fib(n) { \
+  int abc10 = n; \
+  fib_pthread_perturbed((void*)&abc10);\
+}
+#elif defined(PTHREAD_SEQ_VARIANT)
+#define fib(n) fib_sequential_perturbed(n);
+#elif defined(PTHREAD_TRAD_CILK_VARIANT)
+#define fib(n) fib_cilk_trad_perturbed(n);
+#endif
+
 static inline
 double getticks(void) {
   struct timeval tv;
@@ -143,6 +154,9 @@ void receiveLoop(int sock, char recvbuf[]) {
     if (m > 0) {
       remaining = remaining - m;
       if (remaining == 0) {
+#ifdef PERTURB_VARIANT
+        fib(10);
+#endif
         remaining = EXPECTED_RECV_LEN;
         numSent = send(sock, RESPONSE, RESPONSE_LEN, 0);
         /*printf(".");*/

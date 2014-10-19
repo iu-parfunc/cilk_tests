@@ -184,6 +184,7 @@ int main(int argc, char *argv[])
   /* Timing. "Start" timers */
   cilk_sync;
 
+  TIMER_RESET(t);
   TIMER_START(t);
   sol = cilk_spawn knapsack(items, capacity, n, 0);
   cilk_sync;
