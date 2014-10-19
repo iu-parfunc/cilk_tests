@@ -154,6 +154,11 @@ void receiveLoop(int sock, char recvbuf[]) {
           perror("partial send");
           exit(-1);
         }
+      } else {
+        if (remaining < 0) {
+          perror("remaining < 0");
+        }
+        continue;
       }
     } else if (m == 0) {
       nc = __sync_sub_and_fetch(&num_clients, 1);

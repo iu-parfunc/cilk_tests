@@ -11,6 +11,8 @@
 *.s
 *.cmake
 *.make
+*.prof
+*.pdf
 tags
 *CmakeFiles
 libcilkrts/configure
