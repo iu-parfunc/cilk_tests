@@ -133,6 +133,11 @@ void *workerLoop(int epfd) {
     if (m > 0) {
       remaining = remaining - m;
       if (remaining == 0) {
+#ifdef PERTURB_VARIANT
+#ifdef CILK_CCILK_VARIANT
+        fib_cilk_ccilk_perturbed(5);
+#endif
+#endif
         remaining = EXPECTED_RECV_LEN;
         /*numSent = send(epfd, RESPONSE, RESPONSE_LEN, 0);*/
         numSent = cilk_write(epfd, RESPONSE, RESPONSE_LEN);
