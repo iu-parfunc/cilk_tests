@@ -11,8 +11,8 @@ long fib_cilk_trad_perturbed(int n) {
 
   long x;
   long y;
-  if (n == 5)
-    usleep(250000);
+  if (n == 3)
+    usleep(5000);
   x = cilk_spawn fib_cilk_trad_perturbed(n-1);
   // We add a spawn here in order to match time_fib in qthreads
   y =  fib_cilk_trad_perturbed(n-2);

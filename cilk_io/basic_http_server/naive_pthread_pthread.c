@@ -14,8 +14,8 @@ void *fib_pthread_perturbed(void *n) {
   int number_less_one = *fib - 1, number_less_two = *fib - 2;
   int thread_create_status, thread_join_status;
   
-  if (*fib == 5)
-    usleep(250000);
+  if (*fib == 3)
+    usleep(5000);
   if ((*fib == 0) || (*fib == 1)) { 
     pthread_exit((void *)fib); 
   } else { 

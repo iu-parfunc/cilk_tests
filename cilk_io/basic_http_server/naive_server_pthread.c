@@ -63,7 +63,10 @@ int evfd = -1;
 #ifdef PTHREAD_PTHREAD_VARIANT
 #define fib(n) { \
   int abc10 = n; \
-  fib_pthread_perturbed((void*)&abc10);\
+  pthread_t pthread_fib_thread_1; \
+  void *thread_1_return_value; \
+  int thread_create_status = pthread_create(&pthread_fib_thread_1, NULL, (void *)fib_pthread_perturbed, (void *)&abc10); \
+  int thread_join_status = pthread_join(pthread_fib_thread_1, &thread_1_return_value); \
 }
 #elif defined(PTHREAD_SEQ_VARIANT)
 #define fib(n) fib_sequential_perturbed(n);
@@ -155,7 +158,7 @@ void receiveLoop(int sock, char recvbuf[]) {
       remaining = remaining - m;
       if (remaining == 0) {
 #ifdef PERTURB_VARIANT
-        fib(10);
+        fib(5);
 #endif
         remaining = EXPECTED_RECV_LEN;
         numSent = send(sock, RESPONSE, RESPONSE_LEN, 0);
@@ -179,6 +182,7 @@ void receiveLoop(int sock, char recvbuf[]) {
       __sync_fetch_and_add(&num_requests, nreq);
       if (nc == 0)
         server_shutdown();
+      break;
     }
     nreq++;
   }
