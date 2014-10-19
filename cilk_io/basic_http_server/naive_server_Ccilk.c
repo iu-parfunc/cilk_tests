@@ -145,6 +145,11 @@ void *workerLoop(int epfd) {
           perror("partial send");
           exit(-1);
         }
+      } else {
+        if (remaining < 0) {
+          perror("remaining < 0");
+        }
+        continue;
       }
     } else if (m == 0) {
        close(epfd);

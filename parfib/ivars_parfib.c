@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <cilk/cilk.h>
 #include <cilk/concurrent_cilk.h>
@@ -13,6 +14,7 @@
 
 typedef __cilkrts_ivar ivar;
 
+int perturbation_point;
 
 void pfib(ivar *iv, int n){
   long res;
@@ -26,8 +28,21 @@ void pfib(ivar *iv, int n){
     return;
   }
 
+
   cilk_spawn pfib(&iv1, n-1);
   cilk_spawn pfib(&iv2, n-2);
+
+#ifdef PERTURB_PTHREAD_SLEEP
+  if(n == perturbation_point) {
+    usleep(5000);
+  }
+#endif
+
+#ifdef PERTURB_CILK_SLEEP
+  if(n == perturbation_point) {
+    cilk_sleep(5000);
+  }
+#endif
 
   res = READIV(&iv1, long) + READIV(&iv2, long);
   //printf("fib of %d read of ivars %p and %p writing value: %ld\n", n, &iv1, &iv2, res);
@@ -44,6 +59,12 @@ int main(int argc, char** argv) {
     n = atoi(argv[1]);
   else
     n = 42;
+
+  if (argc>2) {
+    perturbation_point = atoi(argv[2]);
+  } else {
+    perturbation_point = n/2;
+  }
 
   ivar iv;
   CLEARIV(&iv);
