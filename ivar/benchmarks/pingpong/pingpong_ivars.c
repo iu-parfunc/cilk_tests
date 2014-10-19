@@ -7,12 +7,14 @@
 // For dump_stats:
 #include <cilk/cilk_undocumented.h>
 #include "../../../common/timer.h"
+#include <pthread.h>
 
 void ping(long id);
 void pong(long id);
 
 long iterations = 10000;
 long num_fibers = 2;
+int  waste_core = 0;
 
 __cilkrts_ivar*  r_ivars;
 __cilkrts_ivar*  w_ivars;
@@ -22,7 +24,7 @@ long* progress;
 volatile int all_done = 0;
 
 void ping(long id) {
-
+  printf("   --> PINGer started on %d\n", (int)pthread_self()%10000);
   while (1) {
 
     // // printf(" [ping] w_ivar[%ld] address : %p\n", id, &w_ivars[id]);
@@ -44,7 +46,7 @@ void ping(long id) {
 }
 
 void pong(long id) {
-
+  printf("   --> PONGer started on %d\n", (int)pthread_self()%10000);
   while (1) {
 
     __cilkrts_ivar_read(&w_ivars[id]);
@@ -71,9 +73,9 @@ void pong(long id) {
  * */
 
 void waste_one_core() {
-  printf(" CORE WASTER: put this core in a busywait until we're signaled...\n");
+  printf(" CORE WASTER [tid %d]: put this core in a busywait until we're signaled...\n", (int)pthread_self()%10000);
   while(!all_done) { }
-  printf(" CORE WASTER: all done spinning, returning now.\n");
+  printf(" CORE WASTER [tid %d]: all done spinning, returning now.\n", (int)pthread_self()%10000);
 }
 
 void run_benchmark() {
@@ -111,6 +113,7 @@ int main(int argc, char **argv) {
 
   if (argc >= 2) num_fibers = atol(argv[1]);
   if (argc >= 3) iterations = atol(argv[2]);
+  if (argc >= 4) waste_core = atol(argv[3]);
 
   printf(" [pingpong] Running benchmark with %ld fiber pairs with %ld iterations each..\n", num_fibers, iterations);
 
@@ -133,7 +136,7 @@ int main(int argc, char **argv) {
   }
 
   // Turning OFF for now.  Something is wrong and it makes it twice as slow [2014.10.18].
-  if(0) cilk_spawn waste_one_core();
+  if(waste_core) cilk_spawn waste_one_core();
   run_benchmark();
   // Tell the wasted core to quit it:
   all_done = 1; __sync_synchronize();
