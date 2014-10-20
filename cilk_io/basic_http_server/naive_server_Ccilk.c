@@ -24,7 +24,6 @@ void *workerLoop(int);
 
 volatile int num_clients;
 volatile int num_requests;
-__thread unsigned int nreq = 0;
 double start_time;
 double end_time;
 
@@ -128,7 +127,6 @@ void *workerLoop(int epfd) {
   int remaining = EXPECTED_RECV_LEN;
 
   while(1) {
-    /*m = recv(epfd, recvbuf, remaining, 0);*/
     m = cilk_read(epfd, recvbuf, remaining);
     if (m > 0) {
       remaining = remaining - m;
@@ -136,10 +134,11 @@ void *workerLoop(int epfd) {
 #ifdef PERTURB_VARIANT
 #ifdef CILK_CCILK_VARIANT
         fib_cilk_ccilk_perturbed(5);
+#else
+        fib_cilk_cilk_perturbed(5);
 #endif
 #endif
         remaining = EXPECTED_RECV_LEN;
-        /*numSent = send(epfd, RESPONSE, RESPONSE_LEN, 0);*/
         numSent = cilk_write(epfd, RESPONSE, RESPONSE_LEN);
         /*printf(".");*/
         if (numSent == -1) {
@@ -157,14 +156,12 @@ void *workerLoop(int epfd) {
         continue;
       }
     } else if (m == 0) {
-       close(epfd);
        i = __sync_sub_and_fetch(&num_clients, 1);
-       __sync_fetch_and_add(&num_requests, nreq);
        if (i == 0)
          server_shutdown();
        break;
     }
-    nreq++;
+    __sync_fetch_and_add(&num_requests, 1);
   }
 }
 

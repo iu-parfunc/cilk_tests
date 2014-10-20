@@ -41,7 +41,7 @@ size_t RESPONSE_LEN;
 
 volatile int num_clients;
 volatile int num_requests;
-__thread unsigned int nreq = 0;
+//__thread unsigned int nreq = 0;
 double start_time;
 double end_time;
 
@@ -61,13 +61,13 @@ int evfd = -1;
 #endif
 
 #ifdef PTHREAD_PTHREAD_VARIANT
-#define fib(n) { \
+#define fib(n) do { \
   int abc10 = n; \
   pthread_t pthread_fib_thread_1; \
   void *thread_1_return_value; \
   int thread_create_status = pthread_create(&pthread_fib_thread_1, NULL, (void *)fib_pthread_perturbed, (void *)&abc10); \
   int thread_join_status = pthread_join(pthread_fib_thread_1, &thread_1_return_value); \
-}
+  } while(0)
 #elif defined(PTHREAD_SEQ_VARIANT)
 #define fib(n) fib_sequential_perturbed(n);
 #elif defined(PTHREAD_TRAD_CILK_VARIANT)
@@ -172,19 +172,19 @@ void receiveLoop(int sock, char recvbuf[]) {
           exit(-1);
         }
       } else {
-        if (remaining < 0) {
           perror("remaining < 0");
-        }
-        continue;
       }
     } else if (m == 0) {
       nc = __sync_sub_and_fetch(&num_clients, 1);
-      __sync_fetch_and_add(&num_requests, nreq);
+      //__sync_fetch_and_add(&num_requests, nreq);
       if (nc == 0)
         server_shutdown();
       break;
+    } else {
+      perror("recv");
     }
-    nreq++;
+    __sync_fetch_and_add(&num_requests, 1);
+    //nreq++;
   }
 }
 
