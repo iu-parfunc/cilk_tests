@@ -10,16 +10,17 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/socket.h>
+#include <net/if.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#include <netinet/in.h>
+#include <linux/if.h>
 #include <sys/eventfd.h>
 #include <stdint.h>
 
 // prototypes
 void acceptLoop();
-void startWorkerThread(int);
-void *workerLoop(void *);
-void receiveLoop(int, char []);
+void receiveLoop(void *);
 
 // constants
 #define MAX_NUM_WORKERS 120
@@ -102,14 +103,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  /*asprintf(&EXPECTED_HTTP_REQUEST, "GET / HTTP/1.1\r\nHost: 129.79.247.33:%d\r\nUser-Agent: weighttp/0.3\r\nConnection: keep-alive\r\n\r\n", atoi(argv[2]));*/
-  asprintf(&EXPECTED_HTTP_REQUEST, "GET / HTTP/1.1\r\nHost: 127.0.0.1:%d\r\nUser-Agent: weighttp/0.3\r\nConnection: keep-alive\r\n\r\n", atoi(argv[2]));
   PORT_NUM=atoi(argv[2]);
-
-  EXPECTED_RECV_LEN = strlen(EXPECTED_HTTP_REQUEST);
-  RESPONSE_LEN = strlen(RESPONSE);
-
-  printf("Length of request: %d;  response: %d\n", EXPECTED_RECV_LEN, RESPONSE_LEN);
 
   int numWorkers = atoi(argv[1]);
   if (numWorkers >= MAX_NUM_WORKERS) {
@@ -125,41 +119,23 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-void startWorkerThread(int w) {
-  pthread_t thread;
-  if (pthread_create(&thread, NULL, workerLoop, (void *)(unsigned long) w)) {
-    perror("pthread_create");
-    exit(-1);
-  }
-  return;
-}
-
-void *workerLoop(void * arg) {
-  int epfd = (int)(unsigned long) arg;
-  int n;
+void receiveLoop(void * arg) {
+  int sock = (int)(unsigned long) arg;
+  char recvbuf[4096];
   ssize_t m;
-  int i;
-  int sock;
-  char recvbuf[1000];
-
-  receiveLoop(epfd, recvbuf);
-  pthread_exit(NULL);
-}
-
-void receiveLoop(int sock, char recvbuf[]) {
-  ssize_t m;
-  int numSent;
+  int numSent = RESPONSE_LEN;
   int remaining = EXPECTED_RECV_LEN;
   int nc;
 
   while(1) {
-    m = recv(sock, recvbuf, remaining, 0);
+    m = recv(sock, recvbuf, remaining, MSG_WAITALL);
     if (m > 0) {
       remaining = remaining - m;
       if (remaining == 0) {
 #ifdef PERTURB_VARIANT
         fib(5);
 #endif
+        __sync_fetch_and_add(&num_requests, 1);
         remaining = EXPECTED_RECV_LEN;
         numSent = send(sock, RESPONSE, RESPONSE_LEN, 0);
         /*printf(".");*/
@@ -171,8 +147,10 @@ void receiveLoop(int sock, char recvbuf[]) {
           perror("partial send");
           exit(-1);
         }
-      } else {
+      } else if (remaining < 0) {
           perror("remaining < 0");
+      } else {
+        continue;
       }
     } else if (m == 0) {
       nc = __sync_sub_and_fetch(&num_clients, 1);
@@ -183,8 +161,6 @@ void receiveLoop(int sock, char recvbuf[]) {
     } else {
       perror("recv");
     }
-    __sync_fetch_and_add(&num_requests, 1);
-    //nreq++;
   }
 }
 
@@ -193,12 +169,13 @@ void acceptLoop()
   int sd;
   struct sockaddr_in addr;
   socklen_t alen = sizeof(addr);
+  struct ifreq ifr;
   short port = PORT_NUM;
   int sock_tmp;
   int current_worker = 0;
   int current_client = 0;
   int optval;
-
+  pthread_t thread;
   if (-1 == (sd = socket(PF_INET, SOCK_STREAM, 0))) {
     printf("socket: error: %d\n",errno);
     exit(-1);
@@ -214,6 +191,18 @@ void acceptLoop()
     printf("bind error: %d\n",errno);
     exit(-1);
   }
+
+  ifr.ifr_addr.sa_family = AF_INET;
+  strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
+  ioctl(sd, SIOCGIFADDR, &ifr);
+  asprintf(&EXPECTED_HTTP_REQUEST, "GET / HTTP/1.1\r\nHost: %s:%d\r\nUser-Agent: weighttp/0.3\r\nConnection: keep-alive\r\n\r\n",
+           inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), port);
+
+  EXPECTED_RECV_LEN = strlen(EXPECTED_HTTP_REQUEST);
+  RESPONSE_LEN = strlen(RESPONSE);
+
+  printf("Length of request: %d;  response: %d\n", EXPECTED_RECV_LEN, RESPONSE_LEN);
+
   if (listen(sd, BACKLOG)) {
     printf("listen error: %d\n",errno);
     exit(-1);
@@ -228,6 +217,9 @@ void acceptLoop()
       start_time = getticks();
     }
     __sync_fetch_and_add(&num_clients, 1);
-    startWorkerThread(sock_tmp);
+    if (pthread_create(&thread, NULL, receiveLoop, (void *)(unsigned long) sock_tmp)) {
+      perror("pthread_create");
+      exit(-1);
+    }
   }
 }
