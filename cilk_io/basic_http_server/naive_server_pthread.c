@@ -38,6 +38,7 @@ void receiveLoop(void *);
 char* EXPECTED_HTTP_REQUEST;
 int EXPECTED_RECV_LEN;
 int PORT_NUM;
+int FIB_NUM;
 size_t RESPONSE_LEN;
 
 volatile int num_clients;
@@ -98,12 +99,13 @@ server_shutdown(void) {
 
 
 int main(int argc, char *argv[]) {
-  if (argc != 3) {
-    printf( "usage: %s #workers <port number>\n", argv[0] );
+  if (argc != 4) {
+    printf( "usage: %s #workers <port number> <fib-n>\n", argv[0] );
     return -1;
   }
 
   PORT_NUM=atoi(argv[2]);
+  FIB_NUM=atoi(argv[2]);
 
   int numWorkers = atoi(argv[1]);
   if (numWorkers >= MAX_NUM_WORKERS) {
@@ -133,7 +135,7 @@ void receiveLoop(void * arg) {
       remaining = remaining - m;
       if (remaining == 0) {
 #ifdef PERTURB_VARIANT
-        fib(5);
+        fib(FIB_NUM);
 #endif
         __sync_fetch_and_add(&num_requests, 1);
         remaining = EXPECTED_RECV_LEN;

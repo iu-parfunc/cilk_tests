@@ -4,6 +4,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
+#include "common.h"
+
+long fib_seq(int n) {
+  if (n<2) return 1;
+  return fib_seq(n-1) + fib_seq(n-2);
+}
 
 void *fib_pthread_perturbed(void *n) { 
   
@@ -13,9 +19,9 @@ void *fib_pthread_perturbed(void *n) {
   void *thread_1_return_value, *thread_2_return_value;
   int number_less_one = *fib - 1, number_less_two = *fib - 2;
   int thread_create_status, thread_join_status;
-  
-  if (*fib == 3)
-    usleep(5000);
+ 
+  if (*fib == FIB_BOTTOM_OUT)
+    return fib_seq(*fib);
   if ((*fib == 0) || (*fib == 1)) { 
     pthread_exit((void *)fib); 
   } else { 

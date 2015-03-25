@@ -10,8 +10,6 @@ long fib_sequential_perturbed(int n) {
 
   long x;
   long y;
-  if (n == 3)
-    usleep(5000);
   x = fib_sequential_perturbed(n-1);
   // We add a spawn here in order to match time_fib in qthreads
   y =  fib_sequential_perturbed(n-2);

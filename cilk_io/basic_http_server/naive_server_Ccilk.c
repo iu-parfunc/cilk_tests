@@ -45,6 +45,7 @@ double end_time;
 char* EXPECTED_HTTP_REQUEST;
 int EXPECTED_RECV_LEN;
 int PORT_NUM;
+int FIB_NUM;
 size_t RESPONSE_LEN;
 
 char RESPONSE[] =
@@ -85,8 +86,8 @@ server_shutdown(void) {
 }
 
 int main(int argc, char *argv[]) {
-  if (argc != 3) {
-    printf( "usage: %s #workers <port number>\n", argv[0] );
+  if (argc != 4) {
+    printf( "usage: %s #workers <port number> <fib-n>\n", argv[0] );
     return -1;
   }
 
@@ -95,6 +96,7 @@ int main(int argc, char *argv[]) {
   }
 
   PORT_NUM=atoi(argv[2]);
+  FIB_NUM=atoi(argv[3]);
 
   int numWorkers = atoi(argv[1]);
   if (numWorkers >= MAX_NUM_WORKERS) {
@@ -128,9 +130,9 @@ void *workerLoop(int epfd) {
       if (remaining == 0) {
 #ifdef PERTURB_VARIANT
 #ifdef CILK_CCILK_VARIANT
-        fib_cilk_ccilk_perturbed(5);
+        fib_cilk_ccilk_perturbed(FIB_NUM);
 #else
-        fib_cilk_cilk_perturbed(5);
+        fib_cilk_cilk_perturbed(FIB_NUM);
 #endif
 #endif
         remaining = EXPECTED_RECV_LEN;
