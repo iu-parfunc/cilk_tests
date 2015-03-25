@@ -15,6 +15,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#include <net/if.h>
+#include <linux/if.h>
 #include <sys/eventfd.h>
 #include <stdint.h>
 #include <sys/epoll.h>
@@ -119,14 +121,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  /*asprintf(&EXPECTED_HTTP_REQUEST, "GET / HTTP/1.1\r\nHost: 129.79.247.33:%d\r\nUser-Agent: weighttp/0.3\r\nConnection: keep-alive\r\n\r\n", atoi(argv[2]));*/
-  asprintf(&EXPECTED_HTTP_REQUEST, "GET / HTTP/1.1\r\nHost: 127.0.0.1:%d\r\nUser-Agent: weighttp/0.3\r\nConnection: keep-alive\r\n\r\n", atoi(argv[2]));
   PORT_NUM=atoi(argv[2]);
-
-  EXPECTED_RECV_LEN = strlen(EXPECTED_HTTP_REQUEST);
-  RESPONSE_LEN = strlen(RESPONSE);
-
-  printf("Length of requst: %d;  response: %d\n", EXPECTED_RECV_LEN, RESPONSE_LEN);
 
   int numWorkers = atoi(argv[1]);
   if (numWorkers >= MAX_NUM_WORKERS) {
@@ -338,6 +333,7 @@ void acceptLoop(int numWorkers)
 {
   int sd;
   struct sockaddr_in addr;
+  struct ifreq ifr;
   struct epoll_event event;
   socklen_t alen = sizeof(addr);
   short port = PORT_NUM;
@@ -361,6 +357,18 @@ void acceptLoop(int numWorkers)
     printf("bind error: %d\n",errno);
     exit(-1);
   }
+
+  ifr.ifr_addr.sa_family = AF_INET;
+  strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
+  ioctl(sd, SIOCGIFADDR, &ifr);
+  asprintf(&EXPECTED_HTTP_REQUEST, "GET / HTTP/1.1\r\nHost: %s:%d\r\nUser-Agent: weighttp/0.3\r\nConnection: keep-alive\r\n\r\n",
+           inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), port);
+
+  EXPECTED_RECV_LEN = strlen(EXPECTED_HTTP_REQUEST);
+  RESPONSE_LEN = strlen(RESPONSE);
+
+  printf("Length of request: %d;  response: %d\n", EXPECTED_RECV_LEN, RESPONSE_LEN);
+  
   if (listen(sd, BACKLOG)) {
     printf("listen error: %d\n",errno);
     exit(-1);
