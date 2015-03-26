@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
   }
 
   PORT_NUM=atoi(argv[2]);
-  FIB_NUM=atoi(argv[2]);
+  FIB_NUM=atoi(argv[3]);
 
   int numWorkers = atoi(argv[1]);
   if (numWorkers >= MAX_NUM_WORKERS) {
