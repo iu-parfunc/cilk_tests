@@ -17,7 +17,7 @@ long fib_cilk_cilk_perturbed(int n) {
 
   long x;
   long y;
-  if (n == FIB_BOTTOM_OUT)
+  if (n <= FIB_BOTTOM_OUT)
     return fib_seq(n);
   x = cilk_spawn fib_cilk_cilk_perturbed(n-1);
   // We add a spawn here in order to match time_fib in qthreads

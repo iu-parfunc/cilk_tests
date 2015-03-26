@@ -20,7 +20,7 @@ void *fib_pthread_perturbed(void *n) {
   int number_less_one = *fib - 1, number_less_two = *fib - 2;
   int thread_create_status, thread_join_status;
  
-  if (*fib == FIB_BOTTOM_OUT)
+  if (*fib <= FIB_BOTTOM_OUT)
     return fib_seq(*fib);
   if ((*fib == 0) || (*fib == 1)) { 
     pthread_exit((void *)fib); 
