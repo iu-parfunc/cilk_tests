@@ -1,3 +1,6 @@
+#ifndef __CILK_TIMING_H__
+#define __CILK_TIMING_H__
+
 #include <time.h>
 
 void __cilkrts_msleep(unsigned long millis)
@@ -15,3 +18,4 @@ void __cilkrts_usleep(unsigned long micros)
   time.tv_nsec = (micros % 1000) * 1000000ul;
   nanosleep(&time,NULL);
 }
+#endif

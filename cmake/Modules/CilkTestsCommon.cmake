@@ -53,7 +53,7 @@ if (NOT ${CMAKE_C_COMPILER} MATCHES "clang")
 endIf()
 
 # base flags for C/C++ that are used irrespective of build type
-set(BASE_C_FLAGS "-Wall -std=c99 ")
+set(BASE_C_FLAGS "-Wall -std=gnu99 ")
 set(BASE_CXX_FLAGS "-Wall")
 
 #clang needs -fcilkplus defined
